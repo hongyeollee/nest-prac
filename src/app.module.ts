@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { PracModule } from './prac/prac.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'entities/user.entity';
 import { Post } from 'entities/post.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { Post } from 'entities/post.entity';
     }),
 
     //module
-    PracModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
