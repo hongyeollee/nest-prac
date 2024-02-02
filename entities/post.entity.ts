@@ -37,6 +37,20 @@ export class Post {
   })
   createdDt: Date
 
+  @Column('datetime', {
+    name: 'updatedDt',
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: '게시글 데이터 수정일',
+  })
+  updatedDt: Date
+
+  @Column('datetime', {
+    name: 'deletedDt',
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: '게시글 데이터 삭제일',
+  })
+  deletedDt: Date
+
   //관계설정
   @ManyToOne(() => User, user => user.posts,
   { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
