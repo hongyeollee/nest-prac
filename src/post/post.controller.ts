@@ -8,8 +8,8 @@ export class PostController {
   ) {}
 
   @Get('list')
-  async selectPostList() {
-    return await this.postService.selectPostList()
+  async selectPostList(@Query('userUuid') userUuid: string) {
+    return await this.postService.selectPostList(userUuid)
   }
 
   @Get()

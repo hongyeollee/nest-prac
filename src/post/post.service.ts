@@ -19,12 +19,17 @@ export class PostService {
    * 게시글 리스트 조회
    * @returns 
    */
-  async selectPostList(): Promise<any> {
-    const list = await this.postRepository.find({
-      where: {
-        deletedDt: IsNull(),
+  async selectPostList(userUuid: string): Promise<any> {
+    const queryBuilder = this.dataSource.createQueryBuilder()
+      .select(['*'])
+      .from(Post, '')
+      .where('deletedDt IS NULL')
+      if(userUuid) {
+        queryBuilder
+          .andWhere(`userUuid = '${userUuid}'`)
       }
-    })
+
+    const list = await queryBuilder.getRawMany()
 
     return {
       list,
