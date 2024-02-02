@@ -61,6 +61,11 @@ export class PostService {
     return result
   }
 
+  /**
+   * 유저가 작성한 게시글 리스트 조회
+   * @param userUuid 
+   * @returns 
+   */
   async selectPostByUser(userUuid: string): Promise<any> {
     if(!userUuid) {
       throw new BadRequestException(
