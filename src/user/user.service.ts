@@ -13,6 +13,10 @@ export class UserService {
     private dataSource: DataSource,
   ) {}
 
+  /**
+   * 유저 리스트 조회
+   * @returns 
+   */
   async selectUserList() {
     const list = await this.userRepository.find({
       where: {
@@ -25,6 +29,11 @@ export class UserService {
     }
   }
 
+  /**
+   * 유저 상세 조회
+   * @param userUuid 
+   * @returns 
+   */
   async selectUser(userUuid: string): Promise<any> {
     if(!userUuid) {
       throw new BadRequestException(
@@ -50,6 +59,13 @@ export class UserService {
     return result
   }
 
+  /**
+   * 유저 생성
+   * @param name 
+   * @param email 
+   * @param password 
+   * @returns 
+   */
   async createUser(name: string, email: string, password: string) {
     await this.userRepository.findOne({
       where: {
