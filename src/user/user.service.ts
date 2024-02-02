@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entity";
 import { DataSource, IsNull, Not, Repository } from "typeorm";
@@ -26,6 +26,12 @@ export class UserService {
   }
 
   async selectUser(userUuid: string): Promise<any> {
+    if(!userUuid) {
+      throw new BadRequestException(
+        'not exist userUuid parameter'
+      )
+    }
+
     const result = await this.userRepository.findOne({
       where: {
         userUuid: userUuid,
