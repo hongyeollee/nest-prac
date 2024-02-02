@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import { UserService } from "./user.service";
 
 @Controller('user')
@@ -13,7 +13,16 @@ export class UserController {
   }
 
   @Get()
-  async selectUser(@Query() userUuid: string) {
+  async selectUser(@Query('userUuid') userUuid: string) {
     return await this.userService.selectUser(userUuid)
+  }
+
+  @Post()
+  async createUser(
+    @Body('name') name: string ,
+    @Body('email') email: string,
+    @Body('password') password: string
+  ) {
+    return await this.userService.createUser(name, email, password)
   }
 }

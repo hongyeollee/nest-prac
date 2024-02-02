@@ -31,6 +31,13 @@ export class User {
   })
   email: string
 
+  @Column('varchar', {
+    name: 'password',
+    nullable: false,
+    comment: '유저의 비밀번호',
+  })
+  password: string
+
   @Column('datetime', {
     name: 'createdDt',
     default: () => 'CURRENT_TIMESTAMP',
