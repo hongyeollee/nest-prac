@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Post } from "entities/post.entity";
+import { UserService } from "src/user/user.service";
 import { DataSource, IsNull, Repository } from "typeorm";
 
 @Injectable()
@@ -8,6 +9,8 @@ export class PostService {
   constructor(
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
+
+    private userService: UserService,
 
     private dataSource: DataSource,
   ) {}
@@ -56,5 +59,37 @@ export class PostService {
     })
 
     return result
+  }
+
+  async selectPostByUser(userUuid: string): Promise<any> {
+    if(!userUuid) {
+      throw new BadRequestException(
+        'not exist userUuid Parameter'
+      )
+    }
+
+    const user = await this.userService.selectUser(userUuid)
+
+    const posts = await this.postRepository.find({
+      where: {
+        userUuid: user.userUuid
+      }
+    })
+
+    const postList = []
+
+    for(const post of posts) {
+      postList.push({
+        id: post.id,
+        userUuid: post.userUuid,
+        title: post.title,
+        content: post.content,
+      })
+    }
+    
+    return {
+      ...user,
+      postList,
+    }
   }
 }

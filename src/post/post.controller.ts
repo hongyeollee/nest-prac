@@ -16,4 +16,9 @@ export class PostController {
   async selecPost(@Query('id') id: number) {
     return await this.postService.selectPost(id)
   }
+
+  @Get('user')
+  async selectPostByUser(@Query('userUuid') userUuid: string) {
+    return await this.postService.selectPostByUser(userUuid)
+  }
 }
