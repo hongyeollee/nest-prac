@@ -54,6 +54,6 @@ export class Post {
   //관계설정
   @ManyToOne(() => User, user => user.posts,
   { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  @JoinColumn({name: 'userUuid'})
+  @JoinColumn({name: 'userUuid', referencedColumnName: 'userUuid'})
   user: User
 }
