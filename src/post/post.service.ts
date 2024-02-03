@@ -98,8 +98,35 @@ export class PostService {
     }
     
     return {
-      ...user,
+      userInfo : {
+        ...user 
+      },
       postList,
+    }
+  }
+
+  /**
+   * 각 유저리스트별에 해당하는 게시글 리스트 조회
+   * @returns 
+   */
+  async selectPostListByUsers() {
+    const users = (await this.userService.selectUserList()).list
+
+    const postListByUserUuid = []
+
+    for(const user of users) {
+      const postByUser = await this.postRepository.find({
+        where: {
+          userUuid: user.userUuid
+        }
+      })
+
+    postListByUserUuid.push(postByUser)
+    }
+
+    return {
+      users,
+      postListByUserUuid,
     }
   }
 }

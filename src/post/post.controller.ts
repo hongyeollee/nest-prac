@@ -21,4 +21,9 @@ export class PostController {
   async selectPostByUser(@Query('userUuid') userUuid: string) {
     return await this.postService.selectPostByUser(userUuid)
   }
+
+  @Get('users')
+  async selectPostListByUsers() {
+    return await this.postService.selectPostListByUsers()
+  }
 }
