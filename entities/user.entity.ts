@@ -60,6 +60,6 @@ export class User {
   deletedDt: Date
 
   //관계설정
-  @OneToMany(() => Post, post => post.userUuid)
+  @OneToMany(() => Post, post => post.user)
   posts: Post[]
 }

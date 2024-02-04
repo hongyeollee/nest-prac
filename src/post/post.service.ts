@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Post } from "entities/post.entity";
+import { User } from "entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { DataSource, IsNull, Repository } from "typeorm";
 
@@ -110,22 +111,31 @@ export class PostService {
    * @returns 
    */
       async selectPostListByUsers() {
-        const users = (await this.userService.selectUserList()).list
 
-        const list = []
+      //case1. leftJoinAndSelect 쿼리 사용 
+      const list = await this.dataSource.getRepository(User)
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.posts', 'post')
+        .where(`user.deletedDt IS NULL`)
+        .getMany()
+        
+      //case2. for문과 spread를 사용한 두번 이상의 호출 쿼리사용
+      // const users = (await this.userService.selectUserList()).list
 
-        for(const user of users) {
-          const postListByUser = await this.postRepository.find({
-            where: {
-              userUuid: user.userUuid
-            }
-          })
+      // const list = []
 
-        list.push({
-          ... user,
-          postListByUser
-        })
-        }
+      // for(const user of users) {
+      //   const postListByUser = await this.postRepository.find({
+      //     where: {
+      //       userUuid: user.userUuid
+      //     }
+      //   })
+
+      // list.push({
+      //   ... user,
+      //   postListByUser
+      // })
+      // }
 
         return {
           list,
