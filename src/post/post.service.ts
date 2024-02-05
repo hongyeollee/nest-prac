@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Post } from "entities/post.entity";
 import { User } from "entities/user.entity";
 import { UserService } from "src/user/user.service";
-import { DataSource, IsNull, Repository } from "typeorm";
+import { DataSource, IsNull, Not, Repository } from "typeorm";
 
 @Injectable()
 export class PostService {
@@ -81,36 +81,45 @@ export class PostService {
 
     const user = await this.userService.selectUser(userUuid)
 
-    const posts = await this.postRepository.find({
-      where: {
-        userUuid: user.userUuid
-      }
-    })
+    //case1. leftJoinAndSelect 메소드 사용하는 방식
+    return await this.dataSource.getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.posts', 'post')
+      .where(`user.userUuid = '${user.userUuid}'`)
+      .andWhere('user.deletedDt IS NULL')
+      .getOne()
 
-    const postList = []
+    //case2. leftJoinAndSelect 메소드를 사용하지 않는 방식의 방식
+    // const posts = await this.postRepository.find({
+    //   where: {
+    //     userUuid: user.userUuid
+    //   }
+    // })
 
-    for(const post of posts) {
-      postList.push({
-        id: post.id,
-        userUuid: post.userUuid,
-        title: post.title,
-        content: post.content,
-      })
-    }
+    // const postList = []
+
+    // for(const post of posts) {
+    //   postList.push({
+    //     id: post.id,
+    //     userUuid: post.userUuid,
+    //     title: post.title,
+    //     content: post.content,
+    //   })
+    // }
     
-    return {
-      userInfo : {
-        ...user 
-      },
-      postList,
-    }
+    // return {
+    //   userInfo : {
+    //     ...user 
+    //   },
+    //   postList,
+    // }
   }
 
   /**
    * 각 유저리스트별에 해당하는 게시글 리스트 조회
    * @returns 
    */
-      async selectPostListByUsers() {
+      async selectPostListByUsers(): Promise<any> {
 
       //case1. leftJoinAndSelect 쿼리 사용 
       const list = await this.dataSource.getRepository(User)
