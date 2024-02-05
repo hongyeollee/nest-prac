@@ -150,4 +150,7 @@ export class PostService {
           list,
         }
       }
+
+
+      //여러개의 값을 한번에 불러올때 promise.all을 사용해서 성능을 효율화 하는 방법 테스트 시도
 }
