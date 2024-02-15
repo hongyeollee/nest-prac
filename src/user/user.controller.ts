@@ -19,9 +19,9 @@ export class UserController {
 
   @Post()
   async createUser(
-    @Body('name') name: string ,
+    @Body('name') name: string,
     @Body('email') email: string,
-    @Body('password') password: string
+    @Body('password') password: string,
   ) {
     return await this.userService.createUser(name, email, password)
   }

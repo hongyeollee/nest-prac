@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entity";
 import { DataSource, IsNull, Not, Repository } from "typeorm";
 import { v4 as uuidv4 } from 'uuid'
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class UserService {
@@ -79,11 +80,13 @@ export class UserService {
       }
     })
 
+    const hashedPassword = await bcrypt.hash(password, 10)
+
     await this.userRepository.insert({
       name,
       userUuid: uuidv4(),
       email,
-      password,
+      password: hashedPassword,
     })
 
     return {
