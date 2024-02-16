@@ -123,7 +123,7 @@ export class UserService {
       },
       {
         name: userDto.name,
-        updatedDt: () => 'CURRENT_TIMESTAMP',
+        // updatedDt: () => 'CURRENT_TIMESTAMP', // sql에서 on update CURRENT_TIMESTAMP Extra처리로 코드 불필요해지기 때문에 주석처리
       }
     )
 
