@@ -14,6 +14,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+    /**
+     * 유저 로그인
+     * @param email 
+     * @param password 
+     * @returns 
+     */
   async login(email: string, password: string): Promise<any> {
     //0. precheck
     if(!password) {
