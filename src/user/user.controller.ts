@@ -13,8 +13,8 @@ export class UserController {
   }
 
   @Get()
-  async selectUser(@Query('userUuid') userUuid: string) {
-    return await this.userService.selectUser(userUuid)
+  async selectUser(@Query('email') email: string) {
+    return await this.userService.selectUser(email)
   }
 
   @Post()

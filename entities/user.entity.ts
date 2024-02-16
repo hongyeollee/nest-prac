@@ -26,6 +26,7 @@ export class User {
 
   @Column('varchar', {
     name: 'email',
+    unique: true,
     nullable: false,
     comment: '유저의 이메일주소',
   })

@@ -35,16 +35,16 @@ export class UserService {
    * @param userUuid 
    * @returns 
    */
-  async selectUser(userUuid: string): Promise<any> {
-    if(!userUuid) {
+  async selectUser(email: string): Promise<any> {
+    if(!email) {
       throw new BadRequestException(
-        'not exist userUuid parameter'
+        'not exist email parameter'
       )
     }
 
     const result = await this.userRepository.findOne({
       where: {
-        userUuid: userUuid,
+        email,
         deletedDt: IsNull(),
       }
     })
