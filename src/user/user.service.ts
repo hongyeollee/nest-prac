@@ -95,6 +95,11 @@ export class UserService {
     }
   }
 
+  /**
+   * 유저 정보 수정
+   * @param userDto 
+   * @returns 
+   */
   async updateUser(userDto: UserDTO): Promise<any> {
     //0. precheck
     const ExistCheckUser = await this.selectUser(userDto.email)
