@@ -3,6 +3,8 @@ import { UserService } from "src/user/user.service";
 import { DataSource } from "typeorm";
 import * as bcrypt from 'bcrypt'
 import { JwtService } from "@nestjs/jwt";
+import { Payload } from "./security/user.payload.interface";
+import { User } from "entities/user.entity";
 
 @Injectable()
 export class AuthService {
@@ -47,9 +49,53 @@ export class AuthService {
       name: userInfo.name,
       email: userInfo.email,
     })
+
+    //+@ 로그인할때 payload정보도 같이 주기 위한 호출 추가
+    const payload: Payload = await this.dataSource.manager.findOne(
+      User,
+      {
+        select: [
+          'id',
+          'userUuid',
+          'name',
+          'email',
+        ],
+        where: {
+          email,
+        }
+      }
+    )
     
     return {
+      message:'success',
       accessToken,
+      payload,
+    }
+  }
+
+  /**
+   * 유저의 토큰 유효성 검사
+   * @param payload 
+   * @returns 
+   */
+  async tokenValidateUser(payload: Payload | undefined): Promise<any> {
+    const jwt = await this.dataSource.manager.findOne(
+      User,
+      {
+        select: [
+          'id',
+          'userUuid',
+          'name',
+          'email',
+        ],
+        where: {
+          email: payload.email,
+        }
+      }
+    )
+
+    return {
+      payload: jwt
     }
   }
 }
