@@ -1,7 +1,7 @@
 import { Body, Controller, Get, NotFoundException, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { Request } from "express";
-import { JwtAuthGuard } from "./security/auth.garud";
+import { JwtAuthGuard } from "./security/auth.guard";
 
 @Controller('auth')
 export class AuthController {
