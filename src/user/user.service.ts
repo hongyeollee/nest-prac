@@ -44,6 +44,13 @@ export class UserService {
     }
 
     const result = await this.userRepository.findOne({
+      select: [
+        'id',
+        'name',
+        'userUuid',
+        'email',
+        'createdDt',
+      ],
       where: {
         email,
         deletedDt: IsNull(),
