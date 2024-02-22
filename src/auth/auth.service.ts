@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnprocessableEntityException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { DataSource } from "typeorm";
 import * as bcrypt from 'bcrypt'
@@ -42,33 +42,31 @@ export class AuthService {
       )
     }
 
-    //3. issue token
-    const accessToken = this.jwtService.sign({
-      id: userInfo.id,
-      userUuid: userInfo.userUuid,
-      name: userInfo.name,
-      email: userInfo.email,
-    })
+    // +@ 로그인할때 payload정보도 같이 주기 위한 호출 추가
 
-    //+@ 로그인할때 payload정보도 같이 주기 위한 호출 추가
-    const payload: Payload = await this.dataSource.manager.findOne(
-      User,
-      {
-        select: [
-          'id',
-          'userUuid',
-          'name',
-          'email',
-        ],
-        where: {
-          email,
-        }
-      }
-    )
-    
+    /**
+     * pick case(createQueryBuilder.select() 케이스)
+     * 주의: getOne(), manage.findOne과 같이 엔티티를 직접적으로 주입받는 경우
+     * console값이
+     * Entity {} 의 형태로 리턴되기 때문에 에러가 발생할 수 있기때문에 사용방법에 대해서 getRawOne()을 사용하게된점
+     * 인지하고 작업을 하는 것이 방향성을 잡는데 도움이 된다.
+     */
+    const user = await this.dataSource.createQueryBuilder()
+      .select([
+        'id',
+        'userUuid',
+        'name',
+        'email',
+      ])
+      .from(User, '')
+      .where(`email = '${email}'`)
+      .getRawOne()
+
+    const payload: Payload = user
+
+    //3. token issue, return payload
     return {
-      message:'success',
-      accessToken,
+      accessToken: this.jwtService.sign(user),
       payload,
     }
   }
@@ -79,20 +77,22 @@ export class AuthService {
    * @returns 
    */
   async tokenValidateUser(payload: Payload | undefined): Promise<any> {
-    const jwt = await this.dataSource.manager.findOne(
-      User,
-      {
-        select: [
-          'id',
-          'userUuid',
-          'name',
-          'email',
-        ],
-        where: {
-          email: payload.email,
-        }
-      }
-    )
+    const jwt = await this.dataSource.createQueryBuilder()
+      .select([
+        'id',
+        'userUuid',
+        'name',
+        'email',
+      ])
+      .from(User, '')
+      .where(`email = '${payload.email}'`)
+      .getRawOne()
+
+    if(!jwt) {
+      throw new NotFoundException(
+        'Can not found user info at tokenValidateUser.'
+      )
+    }
 
     return {
       payload: jwt

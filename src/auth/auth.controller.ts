@@ -24,22 +24,31 @@ export class AuthController {
      */    
   ) {
     const accessToken =  await this.authService.login(email, password)
-    res.cookie('accessToken', accessToken)
+    res.header('Access-Control-Expose-Headers', 'Authorization')
+    res.setHeader('Authorization', 'Bearer ' + accessToken.accessToken)
+    res.cookie('accessToken', accessToken.accessToken)
 
-    return accessToken
+    return {
+      message: 'success',
+      token: accessToken.accessToken,
+      info: accessToken.payload,
+    }
   }
 
-  @Get('authenticate')
+  @Get('authentication')
   @UseGuards(JwtAuthGuard)
   async isAuthenticate(@Req() req: Request) {
-    const user = req.user
+    const token = req.cookies['accessToken']
     
-    if(!user) {
+    if(!token) {
       throw new NotFoundException(
         'not exist user info'
       )
     }
-
-    return user
+    
+    return {
+      message: 'success',
+      token,
+    }
   }
 }
