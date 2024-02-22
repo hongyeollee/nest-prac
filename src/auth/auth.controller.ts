@@ -51,4 +51,23 @@ export class AuthController {
       token,
     }
   }
+
+  @Post('logout')
+  async logout(@Res() res: Response) {
+    //case1. cookie 메소드에서 유효기간 0
+    // res.cookie('accessToken', '', {
+    //   maxAge: 0
+    // })
+
+    //case2. clearCookie 메소드 사용
+    res.clearCookie('accessToken')
+
+    //case3.setCookie에 토큰값 null string으로 사전처리(그럼 유저정보가 없기때문에 접근을 못하도록 사전처리됨)
+    // res.setHeader('Authorization', '') //좀 더 강화하려면 setHeader도 null string처리 해주는것도 좋을것 같음.
+    // res.cookie('accessToken', '')
+    
+    return res.send({
+      message: 'success',
+    })
+  }
 }
