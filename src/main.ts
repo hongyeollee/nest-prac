@@ -12,4 +12,5 @@ async function bootstrap() {
   await app.listen(port)
   console.log(`server listen on port ${port}🚀`)
 }
+// git revert 테스트를 위한 주석
 bootstrap();
