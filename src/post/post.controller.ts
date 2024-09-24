@@ -23,7 +23,10 @@ export class PostController {
   }
 
   @Get('users')
-  async selectPostListByUsers() {
-    return await this.postService.selectPostListByUsers()
+  async selectPostListByUsers(
+    @Query('offset') offset?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return await this.postService.selectPostListByUsers(offset, limit)
   }
 }

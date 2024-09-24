@@ -119,15 +119,24 @@ export class PostService {
    * 각 유저리스트별에 해당하는 게시글 리스트 조회
    * @returns 
    */
-      async selectPostListByUsers(): Promise<any> {
+      async selectPostListByUsers(offset?: number, limit?: number): Promise<any> {
+        //페이지 네이션 사용시 필요
+        // if(!offset || !limit) {
+        //   throw new BadRequestException('invalid offset, limit parameters')
+        // }
+        // if(offset < 1) {
+        //   throw new BadRequestException('invalid page parameter')
+        // }
 
       //case1. leftJoinAndSelect 쿼리 사용 
-      const list = await this.dataSource.getRepository(User)
+      const queryBuilder = this.dataSource.getRepository(User)
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.posts', 'post')
         .where(`user.deletedDt IS NULL`)
-        .getMany()
-        
+
+      const list = await queryBuilder.getMany()
+      const totalCount = await queryBuilder.getCount()
+      
       //case2. for문과 spread를 사용한 두번 이상의 호출 쿼리사용
       // const users = (await this.userService.selectUserList()).list
 
@@ -148,6 +157,7 @@ export class PostService {
 
         return {
           list,
+          totalCount,
         }
       }
 
