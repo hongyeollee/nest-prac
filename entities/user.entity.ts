@@ -1,66 +1,83 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
 import { Post } from "./post.entity";
+import { Exclude } from "class-transformer";
 
-@Entity('user')
+@Entity("user")
 export class User {
-  @PrimaryGeneratedColumn({
-    name: 'id',
-    comment: '유저 고유아이디',
+  @Exclude()
+  @PrimaryGeneratedColumn("increment", {
+    name: "id",
+    comment: "유저 고유아이디",
   })
-  id: number
+  id: number;
 
-  @Column('varchar', {
-    name: 'userUuid',
+  @Column("uuid", {
+    name: "userUuid",
     unique: true,
     nullable: false,
-    comment: '유저의  uuid',
+    comment: "유저의  uuid",
   })
-  userUuid:string
+  userUuid: string;
 
-  @Column('varchar', {
-    name: 'name',
-    nullable: true,
-    comment: '유저의 이름',
+  @Column("varchar", {
+    name: "name",
+    length: 255,
+    nullable: false,
+    comment: "유저의 이름",
   })
-  name: string
+  name: string;
 
-  @Column('varchar', {
-    name: 'email',
+  @Column("varchar", {
+    name: "email",
+    length: 255,
     unique: true,
     nullable: false,
-    comment: '유저의 이메일주소',
+    comment: "유저의 이메일주소",
   })
-  email: string
+  email: string;
 
-  @Column('varchar', {
-    name: 'password',
+  @Exclude()
+  @Column("varchar", {
+    name: "password",
+    length: 255,
     nullable: false,
-    comment: '유저의 비밀번호',
+    comment: "유저의 비밀번호",
   })
-  password: string
+  password: string;
 
-  @Column('datetime', {
-    name: 'createdDt',
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: '유저 데이터 생성일',
+  @CreateDateColumn({
+    name: "createdDt",
+    nullable: false,
+    comment: "유저 데이터 생성일",
   })
-  createdDt: Date
+  createdDt: Date;
 
-  @Column('datetime', {
-    name: 'updatedDt',
+  @Exclude()
+  @UpdateDateColumn({
+    name: "updatedDt",
     nullable: true,
-    comment: '유저 데이터 수정일',
+    comment: "유저 데이터 수정일",
   })
-  updatedDt: Date
+  updatedDt: Date;
 
-  @Column('datetime', {
-    name: 'deletedDt',
+  @Exclude()
+  @DeleteDateColumn({
+    name: "deletedDt",
     nullable: true,
-    comment: '유저 데이터 삭제일',
+    comment: "유저 데이터 삭제일",
   })
-  deletedDt: Date
+  deletedDt: Date;
 
   //관계설정
-  @OneToMany(() => Post, post => post.user)
-  posts: Post[]
+  @Exclude()
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }
