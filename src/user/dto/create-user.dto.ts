@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, Min } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Min, MinLength } from "class-validator";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
 
 export class CreateUserDTO {
   @IsString()
   @IsNotEmpty()
-  @Min(2)
+  @MinLength(2)
   @ApiProperty({
     name: "name",
     example: "김아무개",
