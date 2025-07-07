@@ -20,11 +20,11 @@ export class CreateUserDTO {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
-    name: "사용자 이메일주소",
+    name: "email",
     example: "abcd@efgh.com",
     required: true,
     nullable: false,
-    description: "사용자 이메일",
+    description: "사용자 이메일 주소",
   })
   email: string;
 
