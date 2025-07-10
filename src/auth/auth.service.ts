@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { DataSource } from "typeorm";
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { Payload } from "./security/user.payload.interface";
 import { User } from "entities/user.entity";
@@ -9,37 +14,32 @@ import { User } from "entities/user.entity";
 @Injectable()
 export class AuthService {
   constructor(
-    
     private dataSource: DataSource,
 
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
-    /**
-     * 유저 로그인
-     * @param email 
-     * @param password 
-     * @returns 
-     */
+  /**
+   * 유저 로그인
+   * @param email
+   * @param password
+   * @returns
+   */
   async login(email: string, password: string): Promise<any> {
     //0. precheck
-    if(!password) {
-      throw new BadRequestException(
-        'not exist password parameter'
-      )
+    if (!password) {
+      throw new BadRequestException("not exist password parameter");
     }
 
     //1. check user(+ precheck email)
-    const userInfo = await this.userService.selectUser(email)
+    const userInfo = await this.userService.getUser({ email });
 
     //2. check password
-    const checkPassword = await bcrypt.compare(password, userInfo.password)
+    const checkPassword = await bcrypt.compare(password, userInfo.password);
 
-    if(!checkPassword) {
-      throw new UnprocessableEntityException(
-        'not matched password'
-      )
+    if (!checkPassword) {
+      throw new UnprocessableEntityException("not matched password");
     }
 
     // +@ 로그인할때 payload정보도 같이 주기 위한 호출 추가
@@ -51,51 +51,43 @@ export class AuthService {
      * Entity {} 의 형태로 리턴되기 때문에 에러가 발생할 수 있기때문에 사용방법에 대해서 getRawOne()을 사용하게된점
      * 인지하고 작업을 하는 것이 방향성을 잡는데 도움이 된다.
      */
-    const user = await this.dataSource.createQueryBuilder()
-      .select([
-        'id',
-        'userUuid',
-        'name',
-        'email',
-      ])
-      .from(User, '')
+    const user = await this.dataSource
+      .createQueryBuilder()
+      .select(["id", "userUuid", "name", "email"])
+      .from(User, "")
       .where(`email = '${email}'`)
-      .getRawOne()
+      .getRawOne();
 
-    const payload: Payload = user
+    const payload: Payload = user;
 
     //3. token issue, return payload
     return {
       accessToken: this.jwtService.sign(user),
       payload,
-    }
+    };
   }
 
   /**
    * 유저의 토큰 유효성 검사
-   * @param payload 
-   * @returns 
+   * @param payload
+   * @returns
    */
   async tokenValidateUser(payload: Payload | undefined): Promise<any> {
-    const jwt = await this.dataSource.createQueryBuilder()
-      .select([
-        'id',
-        'userUuid',
-        'name',
-        'email',
-      ])
-      .from(User, '')
+    const jwt = await this.dataSource
+      .createQueryBuilder()
+      .select(["id", "userUuid", "name", "email"])
+      .from(User, "")
       .where(`email = '${payload.email}'`)
-      .getRawOne()
+      .getRawOne();
 
-    if(!jwt) {
+    if (!jwt) {
       throw new NotFoundException(
-        'Can not found user info at tokenValidateUser.'
-      )
+        "Can not found user info at tokenValidateUser.",
+      );
     }
 
     return {
-      payload: jwt
-    }
+      payload: jwt,
+    };
   }
 }
