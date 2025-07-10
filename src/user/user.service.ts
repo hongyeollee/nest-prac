@@ -12,7 +12,6 @@ import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 import { CreateUserDTO } from "./dto/create-user.dto";
 import { GetUserDTO } from "./dto/get-user.dto";
-import { ResponseGetUserDto } from "./dto/response-get-user.dto";
 import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
 import { UpdateUserDTO } from "./dto/update-user-dto";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
@@ -50,7 +49,7 @@ export class UserService {
    * @param getUserDto
    * @returns
    */
-  async getUser(getUserDto: GetUserDTO): Promise<ResponseGetUserDto> {
+  async getUser(getUserDto: GetUserDTO): Promise<User> {
     const userInfo = await this.userRepository.findOne({
       where: {
         email: getUserDto.email,
@@ -62,9 +61,7 @@ export class UserService {
       throw new NotFoundException("Not exist user");
     }
 
-    const { password, posts, ...result } = userInfo;
-
-    return result;
+    return userInfo;
   }
 
   /**

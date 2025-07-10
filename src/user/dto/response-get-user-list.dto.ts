@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ResponseGetUserDto } from "./response-get-user.dto";
+import { ResponseGetUserDTO } from "./response-get-user.dto";
 
 export class ResponseGetUserListDTO {
-  @ApiProperty({ type: [ResponseGetUserDto] })
-  list: ResponseGetUserDto[];
+  @ApiProperty({ type: [ResponseGetUserDTO] })
+  list: ResponseGetUserDTO[];
 }
