@@ -26,7 +26,7 @@ async function bootstrap() {
 
   const documentFactory = () =>
     SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup("api/api-docs", app, documentFactory);
+  SwaggerModule.setup("api/docs", app, documentFactory);
 
   app.use(cookieParser());
 
