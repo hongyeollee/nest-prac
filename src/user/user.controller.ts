@@ -8,16 +8,25 @@ import {
   Query,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { UserDTO } from "./dto/user.dto";
 import { CreateUserDTO } from "./dto/create-user.dto";
 import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
 import { User } from "entities/user.entity";
 import { instanceToPlain } from "class-transformer";
+import { GetUserDTO } from "./dto/get-user.dto";
+import { ResponseGetUserDto } from "./dto/response-get-user.dto";
+import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
+import { UpdateUserDTO } from "./dto/update-user-dto";
 
 @Controller("user")
 @ApiTags("user")
@@ -25,13 +34,63 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get("list")
-  async selectUserList() {
-    return await this.userService.selectUserList();
+  // @ApiBearerAuth() 토근 인증 필요
+  @ApiOperation({
+    summary: "회원 목록 조회",
+    description: "회원들의 정보 목록을 조회합니다.",
+  })
+  @ApiOkResponse({
+    description: "조회 성공",
+    isArray: true,
+    type: ResponseGetUserListDTO,
+  })
+  async getUserList(): Promise<ResponseGetUserListDTO> {
+    return await this.userService.getUserList();
   }
 
   @Get()
-  async selectUser(@Query("email") email: string) {
-    return await this.userService.selectUser(email);
+  // @ApiBearerAuth() 토근 인증 필요
+  @ApiOperation({
+    summary: "회원 조회",
+    description: "회원의 정보를 조회합니다.",
+  })
+  @ApiQuery({
+    name: "email",
+    type: String,
+    example: "abc@def.com",
+    required: true,
+    description: "회원의 이메일",
+  })
+  @ApiBadRequestResponse({
+    description: "잘못된 이메일 형식 입력시",
+    content: {
+      "application/json": {
+        example: {
+          message: ["email must be an email"],
+          error: "Bad Request",
+          statusCode: HttpStatus.BAD_REQUEST,
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "회원 정보 없음",
+    content: {
+      "application/json": {
+        example: {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: "Not exist user",
+          error: "Not Found",
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: "회원 정보 조회 성공",
+    type: ResponseGetUserDto,
+  })
+  async getUser(@Query() getUserDto: GetUserDTO): Promise<ResponseGetUserDto> {
+    return await this.userService.getUser(getUserDto);
   }
 
   @Post()
@@ -66,7 +125,54 @@ export class UserController {
   }
 
   @Put()
-  async updateUser(@Body() userDto: UserDTO) {
-    return await this.userService.updateUser(userDto);
+  @ApiOperation({
+    summary: "회원 정보 수정",
+    description: "회원의 정보를 수정합니다.",
+  })
+  @ApiBody({
+    description:
+      "수정할 회원 정보. 이메일은 식별자이며 수정 대상의 기준입니다.",
+    type: UpdateUserDTO,
+    required: true,
+    examples: {
+      수정예시: {
+        summary: "이름수정",
+        value: {
+          email: "abc@def.com",
+          userUuid: "asdf-asdf-sadf-asdf",
+          name: "강연수",
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "회원 정보 없음",
+    content: {
+      "application/json": {
+        example: {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: "Not exist user",
+          error: "Not Found",
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: "회원 uuid가 잘못된 정보일때",
+    example: {
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: "Not matched userUuid",
+      error: "Bad Request",
+    },
+  })
+  @ApiOkResponse({
+    description: "회원 정보 수정 성공",
+    example: {
+      statusCode: HttpStatus.OK,
+      message: "success",
+    },
+  })
+  async updateUser(@Body() updateUserDto: UpdateUserDTO) {
+    return await this.userService.updateUser(updateUserDto);
   }
 }

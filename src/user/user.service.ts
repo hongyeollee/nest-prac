@@ -7,11 +7,15 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "entities/user.entity";
-import { DataSource, IsNull, Not, Repository } from "typeorm";
+import { DataSource, IsNull, Repository } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
-import { UserDTO } from "./dto/user.dto";
 import { CreateUserDTO } from "./dto/create-user.dto";
+import { GetUserDTO } from "./dto/get-user.dto";
+import { ResponseGetUserDto } from "./dto/response-get-user.dto";
+import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
+import { UpdateUserDTO } from "./dto/update-user-dto";
+import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
 
 @Injectable()
 export class UserService {
@@ -23,10 +27,10 @@ export class UserService {
   ) {}
 
   /**
-   * 유저 리스트 조회
+   * 유저 목록 조회
    * @returns
    */
-  async selectUserList() {
+  async getUserList(): Promise<ResponseGetUserListDTO> {
     const list = await this.userRepository.find({
       where: {
         deletedDt: IsNull(),
@@ -34,42 +38,38 @@ export class UserService {
     });
 
     return {
-      list,
+      list: list.map((user) => {
+        const { password, posts, ...result } = user;
+        return result;
+      }),
     };
   }
 
   /**
    * 유저 상세 조회
-   * @param userUuid
+   * @param getUserDto
    * @returns
    */
-  async selectUser(email: string): Promise<any> {
-    if (!email) {
-      throw new BadRequestException("not exist email parameter");
+  async getUser(getUserDto: GetUserDTO): Promise<ResponseGetUserDto> {
+    const userInfo = await this.userRepository.findOne({
+      where: {
+        email: getUserDto.email,
+        deletedDt: IsNull(),
+      },
+    });
+
+    if (!userInfo) {
+      throw new NotFoundException("Not exist user");
     }
 
-    const result = await this.userRepository
-      .findOne({
-        where: {
-          email,
-          deletedDt: IsNull(),
-        },
-      })
-      .then((res) => {
-        if (!res) {
-          throw new NotFoundException("Not exist user");
-        }
-        return res;
-      });
+    const { password, posts, ...result } = userInfo;
 
     return result;
   }
 
   /**
    * 유저 생성
-   * @param name
-   * @param email
-   * @param password
+   * @param createUserDto
    * @returns
    */
   async createUser(createUserDto: CreateUserDTO): Promise<User> {
@@ -98,35 +98,31 @@ export class UserService {
 
   /**
    * 유저 정보 수정
-   * @param userDto
+   * @param updateUserDto
    * @returns
    */
-  async updateUser(userDto: UserDTO): Promise<any> {
+  async updateUser(
+    updateUserDto: UpdateUserDTO,
+  ): Promise<ResponseCommonSuccessDTO> {
     //0. precheck
-    const ExistCheckUser = await this.selectUser(userDto.email);
+    const ExistCheckUser = await this.getUser({ email: updateUserDto.email });
 
-    if (!userDto.name) {
-      throw new BadRequestException("Not exist name parameter");
-    }
-    if (!userDto.userUuid || userDto.userUuid !== ExistCheckUser.userUuid) {
-      throw new BadRequestException(
-        "Not exist userUuid parameter OR Not matched userUuid",
-      );
+    if (updateUserDto.userUuid !== ExistCheckUser.userUuid) {
+      throw new BadRequestException("Not matched userUuid");
     }
 
     //1. updateInfo
     await this.userRepository.update(
       {
         email: ExistCheckUser.email,
-        userUuid: ExistCheckUser.userUuid,
       },
       {
-        name: userDto.name,
-        // updatedDt: () => 'CURRENT_TIMESTAMP', // sql에서 on update CURRENT_TIMESTAMP Extra처리로 코드 불필요해지기 때문에 주석처리
+        name: updateUserDto.name,
       },
     );
 
     return {
+      statusCode: HttpStatus.OK,
       message: "success",
     };
   }
