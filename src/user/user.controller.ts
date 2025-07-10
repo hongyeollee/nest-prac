@@ -24,7 +24,7 @@ import {
 import { User } from "entities/user.entity";
 import { instanceToPlain } from "class-transformer";
 import { GetUserDTO } from "./dto/get-user.dto";
-import { ResponseGetUserDto } from "./dto/response-get-user.dto";
+import { ResponseGetUserDTO } from "./dto/response-get-user.dto";
 import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
 import { UpdateUserDTO } from "./dto/update-user-dto";
 
@@ -87,10 +87,11 @@ export class UserController {
   })
   @ApiOkResponse({
     description: "회원 정보 조회 성공",
-    type: ResponseGetUserDto,
+    type: ResponseGetUserDTO,
   })
-  async getUser(@Query() getUserDto: GetUserDTO): Promise<ResponseGetUserDto> {
-    return await this.userService.getUser(getUserDto);
+  async getUser(@Query() getUserDto: GetUserDTO): Promise<ResponseGetUserDTO> {
+    const user = await this.userService.getUser(getUserDto);
+    return instanceToPlain(user) as ResponseGetUserDTO;
   }
 
   @Post()
