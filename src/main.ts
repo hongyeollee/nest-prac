@@ -22,6 +22,16 @@ async function bootstrap() {
     .setDescription("나홀로 nest")
     .setVersion("1.0.0")
     .addTag("nest prac")
+    .addBearerAuth(
+      {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        name: "Authorization",
+        in: "header",
+      },
+      "accessToken",
+    )
     .build();
 
   const documentFactory = () =>
