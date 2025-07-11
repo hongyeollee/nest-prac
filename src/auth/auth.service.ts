@@ -1,7 +1,7 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
@@ -10,6 +10,7 @@ import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { Payload } from "./security/user.payload.interface";
 import { User } from "entities/user.entity";
+import { LoginDTO } from "./_dto/login.dto";
 
 @Injectable()
 export class AuthService {
@@ -26,12 +27,17 @@ export class AuthService {
    * @param password
    * @returns
    */
-  async login(email: string, password: string): Promise<any> {
-    //0. precheck
-    if (!password) {
-      throw new BadRequestException("not exist password parameter");
-    }
-
+  async login(loginDto: LoginDTO): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    payload: {
+      id: number;
+      userUuid: string;
+      name: string;
+      email: string;
+    };
+  }> {
+    const { email, password } = loginDto;
     //1. check user(+ precheck email)
     const userInfo = await this.userService.getUser({ email });
 
@@ -55,15 +61,46 @@ export class AuthService {
       .createQueryBuilder()
       .select(["id", "userUuid", "name", "email"])
       .from(User, "")
-      .where(`email = '${email}'`)
+      .where("email = :email", { email })
       .getRawOne();
 
     const payload: Payload = user;
 
-    //3. token issue, return payload
+    //3. token(accessToken, refreshToken) issue, return payload
     return {
-      accessToken: this.jwtService.sign(user),
+      accessToken: this.jwtService.sign(user, { expiresIn: "15m" }),
+      refreshToken: this.jwtService.sign(user, { expiresIn: "7d" }),
       payload,
+    };
+  }
+
+  /**
+   * refreshToken으로 accessToken 재발급
+   * @param refreshToken
+   * @returns
+   */
+  async refreshAccessToken(refreshToken: string) {
+    const payloadRefreshToken = this.jwtService.verify(refreshToken);
+
+    const user = await this.userService.getUser({
+      email: payloadRefreshToken.email,
+    });
+
+    if (!user) throw new UnauthorizedException();
+
+    const payload: Payload = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      userUuid: user.userUuid,
+    };
+
+    const newAccessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
+    const newRefreshToken = this.jwtService.sign(payload, { expiresIn: "7d" });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
     };
   }
 

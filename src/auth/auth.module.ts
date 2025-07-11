@@ -11,7 +11,7 @@ import { JwtStrategy } from "./security/passport.jwt.strategy";
     UserModule,
     JwtModule.register({
       secret: `${process.env.JWT_SECRET_KEY}` || "jwtSecretKey",
-      signOptions: { expiresIn: "1d" },
+      signOptions: { expiresIn: "1d" }, //default값이지만 사용되는 jwt sign에서 expiresIn사용시 사용되는 메소드에서 override됨.
     }),
     PassportModule,
   ],
