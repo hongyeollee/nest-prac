@@ -11,14 +11,16 @@ import { JwtService } from "@nestjs/jwt";
 import { Payload } from "./security/user.payload.interface";
 import { User } from "entities/user.entity";
 import { LoginDTO } from "./_dto/login.dto";
+import { AuthUtil } from "./auth.util";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
 
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+    private readonly authUtil: AuthUtil,
   ) {}
 
   /**
@@ -126,5 +128,29 @@ export class AuthService {
     return {
       payload: jwt,
     };
+  }
+
+  /**
+   * 회원이 비밀번호 모르는 경우 자동 비밀번호 변경
+   */
+  async autoUpdatePassword(email: string) {
+    //회원정보 유무 조회
+    const user = await this.userService.getUser({ email });
+
+    const newPassword = this.authUtil.generateRandomString(10);
+
+    //새로운 비밀번호 암호화
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    //회원의 비밀번호 DB에서 수정
+    await this.dataSource.manager.update(
+      User,
+      { email: user.email },
+      {
+        password: hashedPassword,
+      },
+    );
+
+    //newPassword에 대한 정보 회원의 이메일로 발송
   }
 }

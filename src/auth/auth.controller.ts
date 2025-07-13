@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   HttpStatus,
+  InternalServerErrorException,
   NotFoundException,
+  Patch,
   Post,
   Req,
   Res,
@@ -16,6 +18,7 @@ import { JwtAuthGuard } from "./security/auth.guard";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -214,5 +217,43 @@ export class AuthController {
       message: "logout",
       statusCode: HttpStatus.OK,
     };
+  }
+
+  @Patch("auth-password")
+  @ApiOperation({
+    summary: "회원 임시 비밀번호 설정 및 임시비밀번호 회원 메일로 발송",
+    description:
+      "회원이 비밀번호를 분실한 경우 새로운 임시 비밀번호를 생성하고 임시 비밀번호를 회원의 이메일로 발송합니다.",
+  })
+  @ApiNotFoundResponse({
+    description: "회원 정보 없음",
+    content: {
+      "application/json": {
+        example: {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: "Not exist user",
+          error: "Not Found",
+        },
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: "임시비밀번호 생성 및 임시비밀번호 회원 메일 발송 성공",
+    example: {
+      message: "success",
+      statusCode: HttpStatus.OK,
+    },
+  })
+  async autoUpdatePassword(email: string) {
+    try {
+      await this.authService.autoUpdatePassword(email);
+
+      return {
+        message: "success",
+        statusCode: HttpStatus.OK,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
   }
 }
