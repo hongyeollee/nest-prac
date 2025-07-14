@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -12,6 +13,7 @@ import { Payload } from "./security/user.payload.interface";
 import { User } from "entities/user.entity";
 import { LoginDTO } from "./_dto/login.dto";
 import { AuthUtil } from "./auth.util";
+import { EmailService } from "src/mail/mail.service";
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly authUtil: AuthUtil,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -132,8 +135,10 @@ export class AuthService {
 
   /**
    * 회원이 비밀번호 모르는 경우 자동 비밀번호 변경
+   * @param email
+   * @returns
    */
-  async autoUpdatePassword(email: string) {
+  async autoUpdatePassword(email: string): Promise<void> {
     //회원정보 유무 조회
     const user = await this.userService.getUser({ email });
 
@@ -142,15 +147,37 @@ export class AuthService {
     //새로운 비밀번호 암호화
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    //회원의 비밀번호 DB에서 수정
-    await this.dataSource.manager.update(
-      User,
-      { email: user.email },
-      {
-        password: hashedPassword,
-      },
-    );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    //newPassword에 대한 정보 회원의 이메일로 발송
+    /**
+     * 외부 API(emailService)와 비밀번호 수정 쿼리를 트랜잭션으로 묶은 이유
+     * -> 회원 임시 비밀번호 데이터가 변경됐는데 이메일을 받지 못하면 회원은 변경된 비밀번호를 받을 수 없다.
+     * 서비스 로직상 잘못된 경우 비밀번호가 원상태로 롤백되도록 하는것이 중요하기 때문에 트랜잭션을 사용.
+     */
+    try {
+      //회원의 비밀번호 DB에서 수정
+      await queryRunner.manager.update(
+        User,
+        { email: user.email },
+        {
+          password: hashedPassword,
+        },
+      );
+
+      //newPassword에 대한 정보 회원의 이메일로 발송
+      await this.emailService.sendEmailAuthentication(email, newPassword);
+
+      await queryRunner.commitTransaction();
+
+      return;
+    } catch (error) {
+      console.log(error);
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException("fail auto update password");
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

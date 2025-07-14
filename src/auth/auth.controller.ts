@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpStatus,
-  InternalServerErrorException,
   NotFoundException,
   Patch,
   Post,
@@ -18,6 +17,7 @@ import { JwtAuthGuard } from "./security/auth.guard";
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -219,7 +219,20 @@ export class AuthController {
     };
   }
 
-  @Patch("auth-password")
+  @Patch("password/reset")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        email: {
+          type: "string",
+          description: "임시 비밀번호를 받아볼 이메일 주소",
+          example: "hong@abc.co.kr",
+        },
+      },
+      required: ["email"],
+    },
+  })
   @ApiOperation({
     summary: "회원 임시 비밀번호 설정 및 임시비밀번호 회원 메일로 발송",
     description:
@@ -237,6 +250,14 @@ export class AuthController {
       },
     },
   })
+  @ApiInternalServerErrorResponse({
+    description: "비밀번호 이메일 발송 실패",
+    example: {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: "fail auto update password",
+      error: "Internal Server Error",
+    },
+  })
   @ApiOkResponse({
     description: "임시비밀번호 생성 및 임시비밀번호 회원 메일 발송 성공",
     example: {
@@ -244,16 +265,14 @@ export class AuthController {
       statusCode: HttpStatus.OK,
     },
   })
-  async autoUpdatePassword(email: string) {
-    try {
-      await this.authService.autoUpdatePassword(email);
+  async autoUpdatePassword(
+    @Body("email") email: string,
+  ): Promise<ResponseCommonSuccessDTO> {
+    await this.authService.autoUpdatePassword(email);
 
-      return {
-        message: "success",
-        statusCode: HttpStatus.OK,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(err);
-    }
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+    };
   }
 }
