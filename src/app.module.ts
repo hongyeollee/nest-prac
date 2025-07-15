@@ -8,15 +8,19 @@ import { UserModule } from "./user/user.module";
 import { PostModule } from "./post/post.module";
 import { AuthMoudule } from "./auth/auth.module";
 import { EmailModule } from "./mail/mail.module";
+import { ConfigModule } from "@nestjs/config";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: "mysql",
       host: process.env.DB_HOST || "localhost",
       port: 3306,
-      username: process.env.DB_USER_NAME || "root",
-      password: process.env.DB_PASSWORD || "ghdfuf2", //"root",
+      username: process.env.DB_USER_NAME,
+      password: process.env.DB_PASSWORD,
       database: "nest_prac",
       entities: [User, Post],
       synchronize: false,
