@@ -3,11 +3,30 @@ import { AppModule } from "./app.module";
 import * as cookieParser from "cookie-parser";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+import * as fs from "fs";
 
 async function bootstrap() {
-  const port = Number(process.env.PORT);
+  const isProduction = process.env.NODE_ENV === "production";
+  let app;
 
-  const app = await NestFactory.create(AppModule);
+  if (isProduction) {
+    const httpsOptions = {
+      key: fs.readFileSync(
+        "/etc/letsencrypt/live/record-useful.kro.kr/privkey.pem",
+      ),
+      cert: fs.readFileSync(
+        "/etc/letsencrypt/live/record-useful.kro.kr/fullchain.pem",
+      ),
+    };
+
+    app = await NestFactory.create(AppModule, {
+      httpsOptions,
+    });
+  } else {
+    app = await NestFactory.create(AppModule);
+  }
+
+  const port = isProduction ? process.env.PROD_PORT : process.env.DEV_PORT;
 
   app.useGlobalPipes(
     new ValidationPipe({
