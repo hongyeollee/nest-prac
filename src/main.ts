@@ -66,12 +66,11 @@ async function bootstrap() {
   if (isProduction) {
     const redirectApp = express();
     redirectApp.use((req, res) => {
-      res.redirect(`https://${req.headers.host}${req.url}`);
+      const host = req.headers.host?.replace(/:\d+$/, "");
+      res.redirect(`https://${host}${req.url}`);
     });
 
-    http.createServer(redirectApp).listen(80, () => {
-      console.log(`📌 Http request will be redirect to Https (port 80 -> 443)`);
-    });
+    http.createServer(redirectApp).listen(80);
   }
 }
 bootstrap();
