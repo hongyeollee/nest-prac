@@ -6,6 +6,7 @@ import { ValidationPipe } from "@nestjs/common";
 import * as fs from "fs";
 import * as express from "express";
 import * as http from "http";
+import { RedirectToHttpsMiddleware } from "./_common/_middleware/redirect.middleware";
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === "production";
@@ -60,17 +61,18 @@ async function bootstrap() {
   SwaggerModule.setup("api/docs", app, documentFactory);
 
   app.use(cookieParser());
+  app.use(new RedirectToHttpsMiddleware().use);
 
   await app.listen(port, "0.0.0.0");
   console.log(`server listen on port ${port}🚀`);
-  if (isProduction) {
-    const redirectApp = express();
-    redirectApp.use((req, res) => {
-      const host = req.headers.host?.replace(/:\d+$/, "");
-      res.redirect(`https://${host}${req.url}`);
-    });
+  // if (isProduction) {
+  //   const redirectApp = express();
+  //   redirectApp.use((req, res) => {
+  //     const host = req.headers.host?.replace(/:\d+$/, "");
+  //     res.redirect(`https://${host}${req.url}`);
+  //   });
 
-    http.createServer(redirectApp).listen(80);
-  }
+  //   http.createServer(redirectApp).listen(80);
+  // }
 }
 bootstrap();
