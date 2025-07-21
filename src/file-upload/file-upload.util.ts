@@ -24,7 +24,7 @@ export class FileSizeValidationPipe implements PipeTransform {
       throw new NotAcceptableException("value more than maxSizeKb");
     }
 
-    return value.size < maxSizebyte;
+    return value;
   }
 }
 
