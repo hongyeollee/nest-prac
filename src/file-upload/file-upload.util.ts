@@ -16,7 +16,7 @@ import { extname, basename } from "path";
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
-    const maxSizeKb = 10000;
+    const maxSizebyte = 2 * 1024 * 1024; // 2MB
     if (!value) {
       throw new NotFoundException("not found value");
     }
@@ -24,7 +24,7 @@ export class FileSizeValidationPipe implements PipeTransform {
       throw new NotAcceptableException("value more than maxSizeKb");
     }
 
-    return value.size < maxSizeKb;
+    return value.size < maxSizebyte;
   }
 }
 
