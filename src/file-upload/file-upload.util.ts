@@ -16,7 +16,7 @@ import { extname, basename } from "path";
 @Injectable()
 export class FileSizeValidationPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
-    const maxSizebyte = 2 * 1024 * 1024; // 2MB
+    const maxSizebyte = 5 * 1024 * 1024; // 5MB
     if (!value) {
       throw new NotFoundException("not found value");
     }
