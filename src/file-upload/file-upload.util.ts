@@ -44,8 +44,8 @@ export class FileUploadUtil {
     this.bucket = process.env.AWS_S3_BUCKET;
   }
   generateFileKey(filename: string, subdir: string): string {
-    const ext = extname(filename);
-    const fileDateAndExt = `${this.getDatePrefix()}/${ext}`;
+    const ext = extname(filename).toLowerCase();
+    const fileDateAndExt = `${this.getDatePrefix()}/${filename}${ext}`;
     return `${subdir}/${fileDateAndExt}`;
   }
 
@@ -54,12 +54,16 @@ export class FileUploadUtil {
     const year = String(now.getFullYear()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const seconds = String(now.getSeconds()).padStart(2, "0");
-    const milliseconds = String(now.getMilliseconds()).padStart(2, "0");
+    /**
+     * s3 prefix는 대체적으로 날짜까지만 설정하는 경우가 많으므로 주석처리하여 prefix를 너무 세분화하지 않은것으로 처리함.
+     */
+    // const hours = String(now.getHours()).padStart(2, "0");
+    // const minutes = String(now.getMinutes()).padStart(2, "0");
+    // const seconds = String(now.getSeconds()).padStart(2, "0");
+    // const milliseconds = String(now.getMilliseconds()).padStart(2, "0");
 
-    const timestamp = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    // const timestamp = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    const timestamp = `${year}-${month}-${day}`;
 
     return timestamp;
   }
