@@ -20,7 +20,7 @@ export class FileSizeValidationPipe implements PipeTransform {
     if (!value) {
       throw new NotFoundException("not found value");
     }
-    if (value.size > 10000) {
+    if (value.size > maxSizebyte) {
       throw new NotAcceptableException("value more than maxSizeKb");
     }
 
