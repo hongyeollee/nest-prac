@@ -5,6 +5,7 @@ services:
       context: .
     ports:
       - "443:443"
+      - "80:80"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     env_file:
