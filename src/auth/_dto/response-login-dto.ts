@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
 
 export class ResponseInfoItemDTO {
   @ApiProperty({ description: "유저 고유 값", example: 1 })
@@ -17,10 +18,7 @@ export class ResponseInfoItemDTO {
   email: string;
 }
 
-export class ResponseLoginDTO {
-  @ApiProperty({ description: "리턴 메시지", example: "success" })
-  message: string;
-
+export class ResponseLoginDTO extends ResponseCommonSuccessDTO {
   @ApiProperty({ description: "유저정보", type: ResponseInfoItemDTO })
   user: ResponseInfoItemDTO;
 }

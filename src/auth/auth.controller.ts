@@ -60,9 +60,8 @@ export class AuthController {
     description: "로그인 성공",
     example: {
       message: "success",
-      accessToken:
-        "eyJhbGiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwidXNlclV1aWQiOiJkOTE0MzNmNC0zMDdkLTRmZjUtODQ3Ni0wNzU0OTI5OTc1NzciLCJuYW1lIjoi7J207ZmN7Je0IiWxlcjEwMDRAbmF2ZXIuY29tIiwiaWF0IjoxNzUyMTU4MjQzLCJleHAiOjE3NTIyNDQ2NDN9.Fcy7QIh_Y-wK0jGeSgbon4hg8S",
-      info: {
+      statusCode: HttpStatus.OK,
+      user: {
         id: 0,
         userUuid: "d91433f4-307d-4ff5-8476-23458324759834",
         name: "홍길동",
@@ -99,6 +98,7 @@ export class AuthController {
 
     return {
       message: "success",
+      statusCode: HttpStatus.OK,
       // accessToken: loginInfo.accessToken,
       /**
        * accessToken을 response에 굳이 노출하지 않고 프론트에서 headers의 Authorization에 전달
