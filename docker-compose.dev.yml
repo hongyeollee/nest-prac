@@ -1,0 +1,9 @@
+services:
+  nest-app:
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_USER_NAME=${DB_USER_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}

@@ -1,8 +1,5 @@
-version: "3.8"
 services:
   nest-app:
-    build:
-      context: .
     ports:
       - "443:443"
       - "80:80"
