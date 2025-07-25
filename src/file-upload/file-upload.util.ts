@@ -7,6 +7,7 @@ import {
   ArgumentMetadata,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotAcceptableException,
   NotFoundException,
   PipeTransform,
@@ -32,6 +33,8 @@ Injectable();
 export class FileUploadUtil {
   private s3: S3Client;
   private bucket: string;
+
+  private logger = new Logger(FileUploadUtil.name, { timestamp: true });
 
   constructor() {
     this.s3 = new S3Client({
@@ -84,7 +87,7 @@ export class FileUploadUtil {
         }),
       );
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new InternalServerErrorException("fail upload single file uplaod");
     }
   }
@@ -97,7 +100,7 @@ export class FileUploadUtil {
       });
       await this.s3.send(command);
     } catch (error) {
-      console.error(`[S3 Delete Error] key: ${key}`, error);
+      this.logger.error(`[S3 Delete Error] key: ${key}`, error);
       // 삭제 실패는 로깅만 남기고 예외를 재전파하지 않아야 전체 롤백에 영향 없음
     }
   }

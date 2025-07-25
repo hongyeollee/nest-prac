@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -17,6 +18,7 @@ import { EmailService } from "src/mail/mail.service";
 
 @Injectable()
 export class AuthService {
+  private logger = new Logger(AuthService.name, { timestamp: true });
   constructor(
     private readonly dataSource: DataSource,
 
@@ -173,7 +175,7 @@ export class AuthService {
 
       return;
     } catch (error) {
-      console.log(error);
+      this.logger.error(error);
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException("fail auto update password");
     } finally {

@@ -1,12 +1,15 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { FileUploadUtil } from "./file-upload.util";
 
 @Injectable()
 export class FileUploadService {
+  private logger = new Logger(FileUploadService.name, { timestamp: true });
+
   constructor(private readonly fileUploadUtil: FileUploadUtil) {}
   async singleUpload(
     file: Express.Multer.File,
@@ -32,7 +35,7 @@ export class FileUploadService {
         key,
       };
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       throw new InternalServerErrorException("fail file upload");
     }
   }
@@ -62,7 +65,7 @@ export class FileUploadService {
       );
       return results;
     } catch (error) {
-      console.error(error);
+      this.logger.error(error);
       await Promise.all(
         uploadedKeys.map((key) => this.fileUploadUtil.deleteFromS3(key)),
       );

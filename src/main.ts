@@ -2,10 +2,12 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import * as cookieParser from "cookie-parser";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { ValidationPipe } from "@nestjs/common";
+import { ConsoleLogger, ValidationPipe } from "@nestjs/common";
 import * as fs from "fs";
 import * as express from "express";
 import * as http from "http";
+
+const logger = new ConsoleLogger("Application", { timestamp: true });
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === "production";
@@ -62,7 +64,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   await app.listen(port, "0.0.0.0");
-  console.log(`server listen on port ${port}🚀`);
+  logger.log(
+    `Application Listening on port ${port}🚀. ENV: ${process.env.NODE_ENV}`,
+  );
   if (isProduction) {
     /**
      * ✅ http -> https redirect(애플리케이션 자체로)
