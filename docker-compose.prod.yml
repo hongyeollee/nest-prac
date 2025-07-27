@@ -1,7 +1,7 @@
 services:
   nest-app:
     ports:
-      - "443:443"
+      # - "443:443" //Nginx에서 처리되도록 http로만 애플리케이션 작동되도록 처리
       - "80:80"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
