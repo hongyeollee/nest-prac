@@ -3,7 +3,8 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/letsencrypt/live/record-useful.kro.kr:/etc/letsencrypt/live/record-useful.kro/kr:ro
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
