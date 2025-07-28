@@ -2,9 +2,9 @@ services:
   nest-app:
     ports:
       - 3000:3000
-    volumes:
-      # - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /etc/letsencrypt/live/record-useful.kro.kr:/etc/letsencrypt/live/record-useful.kro.kr:ro
+    # volumes:
+    # - /etc/letsencrypt:/etc/letsencrypt:ro #nginx없이 애플리케이션 자체에서 작동시 필요한 볼륨
+    # - /etc/letsencrypt/live/record-useful.kro.kr:/etc/letsencrypt/live/record-useful.kro.kr:ro #nginx없이 애플리케이션 자체에서 작동시 필요한 볼륨
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
@@ -22,3 +22,4 @@ services:
   nginx:
     volumes:
       - ./nginx/conf.d/production.conf:/etc/nginx/conf.d/server.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
