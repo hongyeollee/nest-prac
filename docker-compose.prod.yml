@@ -1,12 +1,10 @@
 services:
   nest-app:
     ports:
-      # - "443:443" //Nginx에서 처리되도록 http로만 애플리케이션 작동되도록 처리
-      - "80:80"
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    env_file:
-      - .env
+      - 3000:3000
+    # volumes:
+    # - /etc/letsencrypt:/etc/letsencrypt:ro #nginx없이 애플리케이션 자체에서 작동시 필요한 볼륨
+    # - /etc/letsencrypt/live/record-useful.kro.kr:/etc/letsencrypt/live/record-useful.kro.kr:ro #nginx없이 애플리케이션 자체에서 작동시 필요한 볼륨
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
@@ -20,3 +18,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - USER_EMAIL=${USER_EMAIL}
       - EMAIL_PASS=${EMAIL_PASS}
+
+  nginx:
+    volumes:
+      - ./nginx/conf.d/production.conf:/etc/nginx/conf.d/server.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro

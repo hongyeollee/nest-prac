@@ -34,7 +34,7 @@ async function bootstrap() {
       ? process.env.DEV_PORT
       : isLocal()
         ? process.env.LOCAL_PORT
-        : 3000;
+        : 3002;
 
   app.useGlobalPipes(
     new ValidationPipe({

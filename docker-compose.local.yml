@@ -1,9 +1,14 @@
 services:
   nest-app:
     ports:
-      - "80:80"
+      - 3002:3002
     environment:
       - NODE_ENV=${NODE_ENV}
-      - DB_HOST=${DB_HOST}
+      # - DB_HOST=${DB_HOST} => docker 로컬 db host는 host.docker.internal로 사용되므로 정적 값으로 사용
+      - DB_HOST=host.docker.internal
       - DB_USER_NAME=${DB_USER_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
+
+  nginx:
+    volumes:
+      - ./nginx/conf.d/local.conf:/etc/nginx/conf.d/server.conf:ro
