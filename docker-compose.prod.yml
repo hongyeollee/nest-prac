@@ -18,6 +18,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - USER_EMAIL=${USER_EMAIL}
       - EMAIL_PASS=${EMAIL_PASS}
+    depends_on:
+      - redis
 
   nginx:
     volumes:
