@@ -10,6 +10,7 @@ import { AuthMoudule } from "./auth/auth.module";
 import { EmailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { FileUploadModule } from "./file-upload/file-upload.module";
+import { RedisCacheModule } from "./redis/redis.module";
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { FileUploadModule } from "./file-upload/file-upload.module";
        * 동작방식: dataSource.query('SELECT now()'), new Date()
        * => timezone 적용 안 됨
        */
-      timezone: "+09:00",
+      timezone: "Z",
       logging: false, //개발환경에서 유용하게 활용함.
       // logging: ['error', 'warn'] //운영 환경에서는 에러위주, 추가적으로 하면 경고까지도 하는 경우가 일반적인것 같음(chat GPT 내용 확인)
     }),
@@ -49,6 +50,7 @@ import { FileUploadModule } from "./file-upload/file-upload.module";
     AuthMoudule,
     EmailModule,
     FileUploadModule,
+    RedisCacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],

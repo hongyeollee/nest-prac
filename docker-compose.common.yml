@@ -5,6 +5,8 @@ services:
       context: .
     env_file:
       - .env
+    depends_on:
+      - redis
 
   nginx:
     image: nginx:1.29
@@ -17,3 +19,9 @@ services:
       - ./cert:/etc/nginx/cert:ro # 인증서 공통
     depends_on:
       - nest-app
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379

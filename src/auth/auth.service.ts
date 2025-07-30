@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -73,10 +74,21 @@ export class AuthService {
 
     const payload: Payload = user;
 
+    const accessToken = this.jwtService.sign(user, { expiresIn: "15m" });
+    const refreshToken = this.jwtService.sign(user, { expiresIn: "7d" });
+
+    /**
+     * redis에 refrshToken 저장
+     */
+    if (await this.authUtil.getRefreshTokenByRedis(user.userUuid)) {
+      await this.authUtil.delRefreshTokenByRedis(user.userUuid);
+    }
+    await this.authUtil.setRefreshTokenByRedis(refreshToken, user.userUuid);
+
     //3. token(accessToken, refreshToken) issue, return payload
     return {
-      accessToken: this.jwtService.sign(user, { expiresIn: "15m" }),
-      refreshToken: this.jwtService.sign(user, { expiresIn: "7d" }),
+      accessToken,
+      refreshToken,
       payload,
     };
   }
@@ -87,7 +99,7 @@ export class AuthService {
    * @returns
    */
   async refreshAccessToken(refreshToken: string) {
-    const payloadRefreshToken = this.jwtService.verify(refreshToken);
+    const payloadRefreshToken = this.verifyRefreshToken(refreshToken);
 
     const user = await this.userService.getUser({
       email: payloadRefreshToken.email,
@@ -104,6 +116,12 @@ export class AuthService {
 
     const newAccessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
     const newRefreshToken = this.jwtService.sign(payload, { expiresIn: "7d" });
+
+    //redis추가로 인해 refreshToken 메모리DB에 추가
+    // 1. 기존 refreshToken 데이터 제거
+    await this.authUtil.delRefreshTokenByRedis(user.userUuid);
+    // 2. 새로 refreshToken 데이터 추가
+    await this.authUtil.setRefreshTokenByRedis(newRefreshToken, user.userUuid);
 
     return {
       accessToken: newAccessToken,
@@ -181,5 +199,9 @@ export class AuthService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  verifyRefreshToken(refreshToken: string) {
+    return this.jwtService.verify(refreshToken);
   }
 }

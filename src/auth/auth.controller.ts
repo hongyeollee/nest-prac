@@ -27,11 +27,15 @@ import {
 import { LoginDTO } from "./_dto/login.dto";
 import { ResponseLoginDTO } from "./_dto/response-login-dto";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
+import { AuthUtil } from "./auth.util";
 
 @Controller("auth")
 @ApiTags("auth")
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private authUtil: AuthUtil,
+  ) {}
 
   @Post("login")
   @ApiOperation({
@@ -159,7 +163,7 @@ export class AuthController {
     summary: "로그인후에 유저정보 체크용",
     description:
       "로그인 / refreshToken 기능추가로 인해 me api 추가 되어 해당 api는 현재 사용하지 않습니다.",
-    deprecated: true,
+    deprecated: true, // endpoint: "me"로 대체되어 deprecate됨.
     tags: ["미사용"],
   })
   @UseGuards(JwtAuthGuard)
@@ -193,7 +197,10 @@ export class AuthController {
     },
   })
   @Post("logout")
-  logout(@Res({ passthrough: true }) res: Response): ResponseCommonSuccessDTO {
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ResponseCommonSuccessDTO> {
     /**
      * accessToken은 headers의 Authorization에 있어 프론트에서 헤더를 제거
      *  -> req.headers.Authorization은 클라이언트가 요청할 때 넣은 값
@@ -212,6 +219,14 @@ export class AuthController {
     //case3.setCookie에 토큰값 null string으로 사전처리(그럼 유저정보가 없기때문에 접근을 못하도록 사전처리됨)
     // res.setHeader('Authorization', '') //좀 더 강화하려면 setHeader도 null string처리 해주는것도 좋을것 같음.
     // res.cookie('refreshToken', '')
+
+    //case4. 레디스에서 저장한 refreshToken 삭제(레디스 추가건으로 반영된 부분) <2025.07.28>
+    const refreshToken = req.cookies["refreshToken"];
+    if (refreshToken) {
+      const verifyRefreshToken =
+        await this.authService.verifyRefreshToken(refreshToken);
+      await this.authUtil.delRefreshTokenByRedis(verifyRefreshToken.userUuid);
+    }
 
     return {
       message: "logout",

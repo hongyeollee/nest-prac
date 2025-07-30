@@ -5,6 +5,8 @@ export const isProduction = () => process.env.NODE_ENV === "production";
 export const isDevelopment = () => process.env.NODE_ENV === "development";
 export const isLocal = () =>
   process.env.NODE_ENV === "local" || process.env.NODE_ENV === undefined;
+/** 로컬에서 docker로 테스트할때 사용하기 위한 method */
+export const isDockerLocal = () => isLocal() && fs.existsSync("/.dockerenv");
 
 export const currentENV = () =>
   isProduction() ? "production" : isDevelopment() ? "development" : "local";
