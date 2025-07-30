@@ -30,7 +30,7 @@ export class AuthUtil {
       refreshToken,
       REFRESH_TOKEN_REDIS_TTL,
     );
-    console.log("✅ setRefreshTokenByRedis ===> ", result);
+    // console.log("✅ setRefreshTokenByRedis ===> ", result); // 레디스 데이터 작동여부 확인용 콘솔로그(차후 발견시 불필요하다고 판단되면 지워도 무방)
     return result;
   }
 
@@ -42,7 +42,7 @@ export class AuthUtil {
     const result = await this.cacheManager.del(
       authRefreshTokenRedisKey(userUuid),
     );
-    console.log("✅ delRefreshTokenByRedis ===> ", result);
+    // console.log("✅ delRefreshTokenByRedis ===> ", result); // 레디스 데이터 작동여부 확인용 콘솔로그(차후 발견시 불필요하다고 판단되면 지워도 무방)
     return result;
   }
 
@@ -54,7 +54,7 @@ export class AuthUtil {
     const result = await this.cacheManager.get(
       authRefreshTokenRedisKey(userUuid),
     );
-    console.log("✅ getRefreshTokenByRedis ===> ", result);
+    // console.log("✅ getRefreshTokenByRedis ===> ", result); // 레디스 데이터 작동여부 확인용 콘솔로그(차후 발견시 불필요하다고 판단되면 지워도 무방)
     return result;
   }
 }
