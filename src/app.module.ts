@@ -11,6 +11,7 @@ import { EmailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { FileUploadModule } from "./file-upload/file-upload.module";
 import { RedisCacheModule } from "./redis/redis.module";
+import { CommonModule } from "./_common/common.module";
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { RedisCacheModule } from "./redis/redis.module";
     EmailModule,
     FileUploadModule,
     RedisCacheModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

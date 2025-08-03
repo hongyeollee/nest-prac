@@ -4,18 +4,6 @@ import { Cache } from "cache-manager";
 @Injectable()
 export class AuthUtil {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
-  private strings =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890!@#$%^&*()";
-
-  generateRandomString(length: number): string {
-    let result: string = "";
-    for (let i = 0; i < length; i++) {
-      const randomIdx = Math.floor(Math.random() * this.strings.length);
-      result += this.strings.charAt(randomIdx);
-    }
-
-    return result;
-  }
 
   async setRefreshTokenByRedis(
     refreshToken: string,

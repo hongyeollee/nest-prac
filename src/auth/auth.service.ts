@@ -16,6 +16,7 @@ import { UserEntity } from "entities/user.entity";
 import { LoginDTO } from "./_dto/login.dto";
 import { AuthUtil } from "./auth.util";
 import { EmailService } from "src/mail/mail.service";
+import { CommonUtil } from "src/_common/common.util";
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly authUtil: AuthUtil,
     private readonly emailService: EmailService,
+    private readonly commonUtil: CommonUtil,
   ) {}
 
   /**
@@ -162,7 +164,7 @@ export class AuthService {
     //회원정보 유무 조회
     const user = await this.userService.getUser({ email });
 
-    const newPassword = this.authUtil.generateRandomString(10);
+    const newPassword = this.commonUtil.generateRandomString(10);
 
     //새로운 비밀번호 암호화
     const hashedPassword = await bcrypt.hash(newPassword, 10);
