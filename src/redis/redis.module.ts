@@ -12,7 +12,7 @@ import { isDevelopment, isDockerLocal, isProduction } from "src/_config/config";
           isProduction() || isDevelopment() || isDockerLocal()
             ? "redis://redis:6379"
             : "redis://localhost:6379";
-        console.log("host ===>", host);
+        // console.log("host ===>", host);
         return {
           stores: [new KeyvRedis(host)],
           ttl: 1000 * 60, // default 1m

@@ -2,8 +2,8 @@ import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "entities/user.entity";
-import { Post } from "entities/post.entity";
+import { UserEntity } from "entities/user.entity";
+import { PostEntity } from "entities/post.entity";
 import { UserModule } from "./user/user.module";
 import { PostModule } from "./post/post.module";
 import { AuthMoudule } from "./auth/auth.module";
@@ -24,8 +24,8 @@ import { RedisCacheModule } from "./redis/redis.module";
       username: process.env.DB_USER_NAME || "root",
       password: process.env.DB_PASSWORD || "ghdfuf2", //"root",
       database: "nest_prac",
-      entities: [User, Post],
-      synchronize: false,
+      entities: [UserEntity, PostEntity],
+      synchronize: true,
       /**
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
        * 'local': 서버의 로컬시간대

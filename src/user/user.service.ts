@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "entities/user.entity";
+import { UserEntity } from "entities/user.entity";
 import { DataSource, IsNull, Repository } from "typeorm";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
@@ -19,8 +19,8 @@ import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-respon
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
 
     private dataSource: DataSource,
   ) {}
@@ -49,7 +49,7 @@ export class UserService {
    * @param getUserDto
    * @returns
    */
-  async getUser(getUserDto: GetUserDTO): Promise<User> {
+  async getUser(getUserDto: GetUserDTO): Promise<UserEntity> {
     const userInfo = await this.userRepository.findOne({
       where: {
         email: getUserDto.email,
@@ -69,7 +69,7 @@ export class UserService {
    * @param createUserDto
    * @returns
    */
-  async createUser(createUserDto: CreateUserDTO): Promise<User> {
+  async createUser(createUserDto: CreateUserDTO): Promise<UserEntity> {
     const { email, name, password } = createUserDto;
 
     const existed = await this.userRepository.findOne({

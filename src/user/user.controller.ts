@@ -21,7 +21,7 @@ import {
   ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
-import { User } from "entities/user.entity";
+import { UserEntity } from "entities/user.entity";
 import { instanceToPlain } from "class-transformer";
 import { GetUserDTO } from "./dto/get-user.dto";
 import { ResponseGetUserDTO } from "./dto/response-get-user.dto";
@@ -110,7 +110,7 @@ export class UserController {
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
     description: "회원가입 성공",
-    type: User,
+    type: UserEntity,
     example: {
       userUuid: "d3e3dcb5-b123-456f-bc66-7b6d3b456789",
       name: "김아무개",
@@ -120,7 +120,7 @@ export class UserController {
   })
   async createUser(
     @Body() createUserDto: CreateUserDTO,
-  ): Promise<Partial<User>> {
+  ): Promise<Partial<UserEntity>> {
     const user = await this.userService.createUser(createUserDto);
     return instanceToPlain(user);
   }

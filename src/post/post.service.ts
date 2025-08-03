@@ -4,16 +4,16 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Post } from "entities/post.entity";
-import { User } from "entities/user.entity";
+import { PostEntity } from "entities/post.entity";
+import { UserEntity } from "entities/user.entity";
 import { UserService } from "src/user/user.service";
 import { DataSource, IsNull, Not, Repository } from "typeorm";
 
 @Injectable()
 export class PostService {
   constructor(
-    @InjectRepository(Post)
-    private postRepository: Repository<Post>,
+    @InjectRepository(PostEntity)
+    private postRepository: Repository<PostEntity>,
 
     private userService: UserService,
 
@@ -28,7 +28,7 @@ export class PostService {
     const queryBuilder = this.dataSource
       .createQueryBuilder()
       .select(["*"])
-      .from(Post, "")
+      .from(PostEntity, "")
       .where("deletedDt IS NULL");
     if (userUuid) {
       queryBuilder.andWhere(`userUuid = '${userUuid}'`);
@@ -82,7 +82,7 @@ export class PostService {
 
     //case1. leftJoinAndSelect 메소드 사용하는 방식
     return await this.dataSource
-      .getRepository(User)
+      .getRepository(UserEntity)
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.posts", "post")
       // .where(`user.userUuid = '${user.userUuid}'`)
@@ -130,7 +130,7 @@ export class PostService {
 
     //case1. leftJoinAndSelect 쿼리 사용
     const queryBuilder = this.dataSource
-      .getRepository(User)
+      .getRepository(UserEntity)
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.posts", "post")
       .where(`user.deletedDt IS NULL`);

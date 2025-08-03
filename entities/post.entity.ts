@@ -1,59 +1,67 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "./user.entity";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { UserEntity } from "./user.entity";
 
-@Entity('post')
-export class Post {
+@Entity("post")
+export class PostEntity {
   @PrimaryGeneratedColumn({
-    name: 'id',
-    comment: '게시판의 고유 번호',
+    name: "id",
+    comment: "게시판의 고유 번호",
   })
-  id: number
+  id: number;
 
-  @Column('varchar', {
-    name: 'userUuid',
+  @Column("varchar", {
+    name: "userUuid",
     nullable: true,
-    comment: '유저의 uuid 값',
+    comment: "유저의 uuid 값",
   })
-  userUuid: string
+  userUuid: string;
 
-  @Column('varchar', {
-    name: 'title',
+  @Column("varchar", {
+    name: "title",
     nullable: false,
-    comment: '게시글의 제목',
+    comment: "게시글의 제목",
   })
-  title: string
+  title: string;
 
-  @Column('longtext', {
-    name: 'content',
+  @Column("longtext", {
+    name: "content",
     nullable: true,
-    comment: '게시글의 내용'
+    comment: "게시글의 내용",
   })
-  content: string
+  content: string;
 
-  @Column('datetime', {
-    name: 'createdDt',
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: '게시글 데이터 생성일',
+  @Column("datetime", {
+    name: "createdDt",
+    default: () => "CURRENT_TIMESTAMP",
+    comment: "게시글 데이터 생성일",
   })
-  createdDt: Date
+  createdDt: Date;
 
-  @Column('datetime', {
-    name: 'updatedDt',
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: '게시글 데이터 수정일',
+  @Column("datetime", {
+    name: "updatedDt",
+    default: () => "CURRENT_TIMESTAMP",
+    comment: "게시글 데이터 수정일",
   })
-  updatedDt: Date
+  updatedDt: Date;
 
-  @Column('datetime', {
-    name: 'deletedDt',
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: '게시글 데이터 삭제일',
+  @Column("datetime", {
+    name: "deletedDt",
+    default: () => "CURRENT_TIMESTAMP",
+    comment: "게시글 데이터 삭제일",
   })
-  deletedDt: Date
+  deletedDt: Date;
 
   //관계설정
-  @ManyToOne(() => User, user => user.posts,
-  { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  @JoinColumn({name: 'userUuid', referencedColumnName: 'userUuid'})
-  user: User
+  @ManyToOne(() => UserEntity, (user) => user.posts, {
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "userUuid", referencedColumnName: "userUuid" })
+  user: UserEntity;
 }

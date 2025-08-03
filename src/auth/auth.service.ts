@@ -12,7 +12,7 @@ import { DataSource } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { Payload } from "./security/user.payload.interface";
-import { User } from "entities/user.entity";
+import { UserEntity } from "entities/user.entity";
 import { LoginDTO } from "./_dto/login.dto";
 import { AuthUtil } from "./auth.util";
 import { EmailService } from "src/mail/mail.service";
@@ -68,7 +68,7 @@ export class AuthService {
     const user = await this.dataSource
       .createQueryBuilder()
       .select(["id", "userUuid", "name", "email"])
-      .from(User, "")
+      .from(UserEntity, "")
       .where("email = :email", { email })
       .getRawOne();
 
@@ -138,7 +138,7 @@ export class AuthService {
     const jwt = await this.dataSource
       .createQueryBuilder()
       .select(["id", "userUuid", "name", "email"])
-      .from(User, "")
+      .from(UserEntity, "")
       .where(`email = '${payload.email}'`)
       .getRawOne();
 
@@ -179,7 +179,7 @@ export class AuthService {
     try {
       //회원의 비밀번호 DB에서 수정
       await queryRunner.manager.update(
-        User,
+        UserEntity,
         { email: user.email },
         {
           password: hashedPassword,

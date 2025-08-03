@@ -7,11 +7,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { Post } from "./post.entity";
+import { PostEntity } from "./post.entity";
 import { Exclude } from "class-transformer";
 
 @Entity("user")
-export class User {
+export class UserEntity {
   @Exclude()
   @PrimaryGeneratedColumn("increment", {
     name: "id",
@@ -78,6 +78,6 @@ export class User {
 
   //관계설정
   @Exclude()
-  @OneToMany(() => Post, (post) => post.user)
-  posts: Post[];
+  @OneToMany(() => PostEntity, (postEntity) => postEntity.user)
+  posts: PostEntity[];
 }
