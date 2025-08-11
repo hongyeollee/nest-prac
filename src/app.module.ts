@@ -11,7 +11,11 @@ import { EmailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { FileUploadModule } from "./file-upload/file-upload.module";
 import { RedisCacheModule } from "./redis/redis.module";
+import { CouponEntity } from "entities/coupons/coupon.entity";
+import { CouponIssuedEntity } from "entities/coupons/coupon-issued.entity";
+import { CouponIssuedLogEntity } from "entities/coupons/coupon-issued-log.entity";
 import { CommonModule } from "./_common/common.module";
+import { CouponModule } from "./coupon/coupon.module";
 
 @Module({
   imports: [
@@ -23,9 +27,15 @@ import { CommonModule } from "./_common/common.module";
       host: process.env.DB_HOST || "localhost",
       port: 3306,
       username: process.env.DB_USER_NAME || "root",
-      password: process.env.DB_PASSWORD || "ghdfuf2", //"root",
+      password: process.env.DB_PASSWORD || "ghdfuf2",
       database: "nest_prac",
-      entities: [UserEntity, PostEntity],
+      entities: [
+        UserEntity,
+        PostEntity,
+        CouponEntity,
+        CouponIssuedEntity,
+        CouponIssuedLogEntity,
+      ],
       synchronize: true,
       /**
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
@@ -41,7 +51,7 @@ import { CommonModule } from "./_common/common.module";
        * => timezone 적용 안 됨
        */
       timezone: "Z",
-      logging: false, //개발환경에서 유용하게 활용함.
+      logging: true, //개발환경에서 유용하게 활용함.
       // logging: ['error', 'warn'] //운영 환경에서는 에러위주, 추가적으로 하면 경고까지도 하는 경우가 일반적인것 같음(chat GPT 내용 확인)
     }),
 
@@ -53,6 +63,7 @@ import { CommonModule } from "./_common/common.module";
     FileUploadModule,
     RedisCacheModule,
     CommonModule,
+    CouponModule,
   ],
   controllers: [AppController],
   providers: [AppService],
