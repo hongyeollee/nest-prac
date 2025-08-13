@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -16,6 +17,9 @@ import { CouponEntity } from "entities/coupons/coupon.entity";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { CreateLimitCouponIssueByUserDTO } from "../_dto/create-limit-coupon-issue-by-user.dto";
 import { CouponIssuedEntity } from "entities/coupons/coupon-issued.entity";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
+import { ResponseSuccessGetMyCouponListDTO } from "../_dto/reponse-success-get-my-coupon-list-dto";
 
 @Injectable()
 export class CouponIssuedService {
@@ -24,6 +28,9 @@ export class CouponIssuedService {
 
     private readonly userService: UserService,
     private readonly couponService: CouponService,
+
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   /**
@@ -215,6 +222,11 @@ export class CouponIssuedService {
   }
 
   async getMyCoupons(user: Payload, page: number = 1, limit: number = 10) {
+    const redisKey = `coupons:list:${user.id}:p${page}:l${limit}`;
+    const cached =
+      await this.cacheManager.get<ResponseSuccessGetMyCouponListDTO>(redisKey);
+    if (cached) return cached;
+
     const couponsIssued = this.dataSource
       .getRepository(CouponIssuedEntity)
       .createQueryBuilder("ci")
@@ -245,11 +257,14 @@ export class CouponIssuedService {
       };
     });
 
-    return {
+    const result = {
       coupons: coupon,
       totalCount,
       currPage: page,
       totalPage: Math.ceil(totalCount / limit),
     };
+
+    await this.cacheManager.set(redisKey, result, page === 1 ? 10 : 20);
+    return { ...result };
   }
 }
