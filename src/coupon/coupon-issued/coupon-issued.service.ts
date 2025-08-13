@@ -23,6 +23,9 @@ import { ResponseSuccessGetMyCouponListDTO } from "../_dto/reponse-success-get-m
 
 @Injectable()
 export class CouponIssuedService {
+  private GET_MY_COUPON_TEN_SEC = 1000 * 10;
+  private GET_MY_COUPON_TWENTY_SEC = 1000 * 20;
+
   constructor(
     private readonly dataSource: DataSource,
 
@@ -264,7 +267,11 @@ export class CouponIssuedService {
       totalPage: Math.ceil(totalCount / limit),
     };
 
-    await this.cacheManager.set(redisKey, result, page === 1 ? 10 : 20);
+    await this.cacheManager.set(
+      redisKey,
+      result,
+      page === 1 ? this.GET_MY_COUPON_TEN_SEC : this.GET_MY_COUPON_TWENTY_SEC,
+    );
     return { ...result };
   }
 }
