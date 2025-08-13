@@ -1,4 +1,4 @@
-import { NestFactory } from "@nestjs/core";
+import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import * as cookieParser from "cookie-parser";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -13,6 +13,7 @@ import {
   isLocal,
   isProduction,
 } from "./_config/config";
+import { SimpleExceptionFilter } from "./_common/simple-exception.filter";
 
 const logger = new ConsoleLogger("Application", { timestamp: true });
 
@@ -27,6 +28,7 @@ async function bootstrap() {
   //다음해야할것 -> Nginx 설치 및 Nginx로 프록시 설정
 
   const app = await NestFactory.create(AppModule);
+  const httpAdapterHost = app.get(HttpAdapterHost);
 
   const port = isProduction()
     ? process.env.PROD_PORT
@@ -66,6 +68,7 @@ async function bootstrap() {
   SwaggerModule.setup("api/docs", app, documentFactory);
 
   app.use(cookieParser());
+  app.useGlobalFilters(new SimpleExceptionFilter(httpAdapterHost));
 
   await app.listen(port, "0.0.0.0");
   logger.log(`Application Listening on port ${port}🚀. ENV: ${currentENV()}`);
