@@ -123,4 +123,12 @@ export class UserService {
       message: "success",
     };
   }
+
+  async findOneById(id: number) {
+    return await this.userRepository.findOne({
+      select: ["id", "email", "name", "userUuid", "createdDt", "updatedDt"],
+      where: { id },
+      withDeleted: false,
+    });
+  }
 }

@@ -9,12 +9,15 @@ import {
 } from "typeorm";
 import { PostEntity } from "./post.entity";
 import { Exclude } from "class-transformer";
+import { CouponIssuedEntity } from "./coupons/coupon-issued.entity";
+import { CouponEntity } from "./coupons/coupon.entity";
 
 @Entity("user")
 export class UserEntity {
   @Exclude()
   @PrimaryGeneratedColumn("increment", {
     name: "id",
+    unsigned: true,
     comment: "유저 고유아이디",
   })
   id: number;
@@ -80,4 +83,12 @@ export class UserEntity {
   @Exclude()
   @OneToMany(() => PostEntity, (postEntity) => postEntity.user)
   posts: PostEntity[];
+
+  @Exclude()
+  @OneToMany(() => CouponIssuedEntity, (couponIssued) => couponIssued.user)
+  issuedCoupons: CouponIssuedEntity[];
+
+  @Exclude()
+  @OneToMany(() => CouponEntity, (coupon) => coupon.issuedUserId)
+  coupons: CouponEntity[];
 }
