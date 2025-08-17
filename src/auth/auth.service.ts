@@ -45,6 +45,7 @@ export class AuthService {
       userUuid: string;
       name: string;
       email: string;
+      userType: string;
     };
   }> {
     const { email, password } = loginDto;
@@ -69,7 +70,7 @@ export class AuthService {
      */
     const user = await this.dataSource
       .createQueryBuilder()
-      .select(["id", "userUuid", "name", "email"])
+      .select(["id", "userUuid", "name", "email", "userType"])
       .from(UserEntity, "")
       .where("email = :email", { email })
       .getRawOne();
@@ -114,6 +115,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       userUuid: user.userUuid,
+      userType: user.userType,
     };
 
     const newAccessToken = this.jwtService.sign(payload, { expiresIn: "15m" });

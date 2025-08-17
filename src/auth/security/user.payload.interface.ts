@@ -3,4 +3,5 @@ export interface Payload {
   userUuid: string;
   name: string;
   email: string;
+  userType: string;
 }
