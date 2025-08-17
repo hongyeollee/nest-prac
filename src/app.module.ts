@@ -36,8 +36,8 @@ import { CouponModule } from "./coupon/coupon.module";
         CouponIssuedEntity,
         CouponIssuedLogEntity,
       ],
-      synchronize: true,
-      /**
+      synchronize: process.env.NODE_ENV === "production" ? false : true,
+      /*
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
        * 'local': 서버의 로컬시간대
        * 'Z': UT

@@ -18,6 +18,8 @@ import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-respon
 
 @Injectable()
 export class UserService {
+  private userTypeList = ["ADMIN", "GENERAL"];
+
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
@@ -70,7 +72,9 @@ export class UserService {
    * @returns
    */
   async createUser(createUserDto: CreateUserDTO): Promise<UserEntity> {
-    const { email, name, password } = createUserDto;
+    const { email, name, password, userType } = createUserDto;
+
+    const role = userType ? userType.toUpperCase() : "GENERAL";
 
     const existed = await this.userRepository.findOne({
       where: { email },
@@ -85,6 +89,7 @@ export class UserService {
       name,
       userUuid: uuidv4(),
       email,
+      userType: role,
       password: hashedPassword,
     });
 
@@ -124,9 +129,40 @@ export class UserService {
     };
   }
 
+  async updateUserRole(
+    id: number,
+    userType: string,
+  ): Promise<ResponseCommonSuccessDTO> {
+    const existed = await this.findOneById(id);
+    if (!existed) throw new NotFoundException("Not exist user");
+
+    if (!this.userTypeList.includes(userType)) {
+      throw new BadRequestException("invalid userType");
+    }
+
+    if (userType === existed.userType) {
+      throw new ConflictException("already userType equal");
+    }
+
+    await this.userRepository.update({ id: existed.id }, { userType });
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+    };
+  }
+
   async findOneById(id: number) {
     return await this.userRepository.findOne({
-      select: ["id", "email", "name", "userUuid", "createdDt", "updatedDt"],
+      select: [
+        "id",
+        "email",
+        "name",
+        "userType",
+        "userUuid",
+        "createdDt",
+        "updatedDt",
+      ],
       where: { id },
       withDeleted: false,
     });

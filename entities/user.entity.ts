@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { PostEntity } from "./post.entity";
-import { Exclude } from "class-transformer";
+import { Exclude, Transform } from "class-transformer";
 import { CouponIssuedEntity } from "./coupons/coupon-issued.entity";
 import { CouponEntity } from "./coupons/coupon.entity";
 
@@ -29,6 +29,16 @@ export class UserEntity {
     comment: "유저의  uuid",
   })
   userUuid: string;
+
+  @Transform(({ value }) => value?.toUpperCase())
+  @Column("varchar", {
+    name: "userType",
+    length: 255,
+    nullable: false,
+    default: "GENERAL",
+    comment: `유저의 타입(ex. "ADMIN", "GENERAL")`,
+  })
+  userType: string = "GENERAL";
 
   @Column("varchar", {
     name: "name",

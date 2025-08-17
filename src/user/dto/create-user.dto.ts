@@ -1,8 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, Min, MinLength } from "class-validator";
-import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
+import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 
 export class CreateUserDTO {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    name: "userType",
+    example: "ADMIN",
+    required: true,
+    nullable: false,
+    default: "GENERAL",
+    description: "유저의 타입",
+  })
+  userType: string = "GENERAL";
+
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

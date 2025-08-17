@@ -3,9 +3,12 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Put,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDTO } from "./dto/create-user.dto";
@@ -18,8 +21,10 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import { UserEntity } from "entities/user.entity";
 import { instanceToPlain } from "class-transformer";
@@ -27,6 +32,10 @@ import { GetUserDTO } from "./dto/get-user.dto";
 import { ResponseGetUserDTO } from "./dto/response-get-user.dto";
 import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
 import { UpdateUserDTO } from "./dto/update-user-dto";
+import { UpperCasePipe } from "src/_common/pipes/uppercase.pipe";
+import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
+import { ParseintPipe } from "src/_common/pipes/parseint.pipe";
+import { JwtAuthGuard } from "src/auth/security/auth.guard";
 
 @Controller("user")
 @ApiTags("user")
@@ -34,7 +43,7 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Get("list")
-  // @ApiBearerAuth() 토근 인증 필요
+  // @ApiBearerAuth() 토큰 인증 필요
   @ApiOperation({
     summary: "회원 목록 조회",
     description: "회원들의 정보 목록을 조회합니다.",
@@ -49,7 +58,7 @@ export class UserController {
   }
 
   @Get()
-  // @ApiBearerAuth() 토근 인증 필요
+  // @ApiBearerAuth() 토zms 인증 필요
   @ApiOperation({
     summary: "회원 조회",
     description: "회원의 정보를 조회합니다.",
@@ -175,5 +184,73 @@ export class UserController {
   })
   async updateUser(@Body() updateUserDto: UpdateUserDTO) {
     return await this.userService.updateUser(updateUserDto);
+  }
+
+  @Patch(":id")
+  @ApiBearerAuth("accessToken")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "회원의 타입 변경",
+    description: "회원의 타입을 수정합니다,",
+  })
+  @ApiParam({
+    name: "id",
+    description: "회원 타입 변경하고자 하는 회원의 id값",
+    example: 1,
+    type: "string",
+  })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        userType: {
+          type: "string",
+          example: "ADMIN",
+          description: "변경하고자 하는 유저 타입",
+        },
+      },
+      required: ["userType"],
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: "로그인 하지 않은 경우",
+    example: {
+      message: "Unauthorized",
+      statusCode: HttpStatus.UNAUTHORIZED,
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "회원정보 없음",
+    example: {
+      statusCode: HttpStatus.NOT_FOUND,
+      message: "Not exist user",
+      error: "Not Found",
+    },
+  })
+  @ApiBadRequestResponse({
+    description: "유효하지 않은 userType 값",
+    example: {
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: "invalid userType",
+      error: "Bad Request",
+    },
+  })
+  @ApiConflictResponse({
+    description: "변경하고자 하는 userType과 유저의 userType이 같은 경우",
+    example: {
+      statusCode: HttpStatus.CONFLICT,
+      message: "already userType equal",
+      error: "Conflict",
+    },
+  })
+  @ApiOkResponse({
+    description: "회원 타입 변경 성공",
+    type: ResponseCommonSuccessDTO,
+  })
+  async updateUserRole(
+    @Param("id", new ParseintPipe()) id: number,
+    @Body("userType", new UpperCasePipe()) userType: string,
+  ): Promise<ResponseCommonSuccessDTO> {
+    return await this.userService.updateUserRole(id, userType);
   }
 }
