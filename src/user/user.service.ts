@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "entities/user.entity";
@@ -15,6 +16,7 @@ import { GetUserDTO } from "./dto/get-user.dto";
 import { ResponseGetUserListDTO } from "./dto/response-get-user-list.dto";
 import { UpdateUserDTO } from "./dto/update-user-dto";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
+import { Payload } from "src/auth/security/user.payload.interface";
 
 @Injectable()
 export class UserService {
@@ -132,9 +134,14 @@ export class UserService {
   async updateUserRole(
     id: number,
     userType: string,
+    user: Payload,
   ): Promise<ResponseCommonSuccessDTO> {
     const existed = await this.findOneById(id);
     if (!existed) throw new NotFoundException("Not exist user");
+
+    if (existed.id === user.id) {
+      throw new UnprocessableEntityException("can not change me");
+    }
 
     if (!this.userTypeList.includes(userType)) {
       throw new BadRequestException("invalid userType");

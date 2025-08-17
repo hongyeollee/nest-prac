@@ -25,6 +25,7 @@ import {
   ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from "@nestjs/swagger";
 import { UserEntity } from "entities/user.entity";
 import { instanceToPlain } from "class-transformer";
@@ -36,6 +37,10 @@ import { UpperCasePipe } from "src/_common/pipes/uppercase.pipe";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
 import { ParseintPipe } from "src/_common/pipes/parseint.pipe";
 import { JwtAuthGuard } from "src/auth/security/auth.guard";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { User } from "src/auth/decorator/user.decorator";
+import { Payload } from "src/auth/security/user.payload.interface";
+import { RolesGuard } from "src/auth/security/role.guard";
 
 @Controller("user")
 @ApiTags("user")
@@ -188,7 +193,8 @@ export class UserController {
 
   @Patch(":id")
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("ADMIN")
   @ApiOperation({
     summary: "회원의 타입 변경",
     description: "회원의 타입을 수정합니다,",
@@ -227,6 +233,14 @@ export class UserController {
       error: "Not Found",
     },
   })
+  @ApiUnprocessableEntityResponse({
+    description: "자기 자신의 권한을 변경하려고 하는 경우",
+    example: {
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      message: "can not change me",
+      error: "Unprocessable Entity",
+    },
+  })
   @ApiBadRequestResponse({
     description: "유효하지 않은 userType 값",
     example: {
@@ -250,7 +264,8 @@ export class UserController {
   async updateUserRole(
     @Param("id", new ParseintPipe()) id: number,
     @Body("userType", new UpperCasePipe()) userType: string,
+    @User() user: Payload,
   ): Promise<ResponseCommonSuccessDTO> {
-    return await this.userService.updateUserRole(id, userType);
+    return await this.userService.updateUserRole(id, userType, user);
   }
 }
