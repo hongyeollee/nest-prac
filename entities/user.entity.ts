@@ -67,22 +67,31 @@ export class UserEntity {
   password: string;
 
   @CreateDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "createdDt",
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "유저 데이터 생성일",
   })
   createdDt: Date;
 
   @Exclude()
   @UpdateDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "updatedDt",
     nullable: true,
+    default: () => "CURRENT_TIMESTAMP(0)",
+    onUpdate: "CURRENT_TIMESTAMP(0)",
     comment: "유저 데이터 수정일",
   })
   updatedDt: Date;
 
   @Exclude()
   @DeleteDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "deletedDt",
     nullable: true,
     comment: "유저 데이터 삭제일",

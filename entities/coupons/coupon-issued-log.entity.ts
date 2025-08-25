@@ -42,9 +42,11 @@ export class CouponIssuedLogEntity {
   action: string;
 
   @CreateDateColumn({
-    name: "createdDt",
     type: "datetime",
+    precision: 0,
+    name: "createdDt",
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 로그 생성일시",
   })
   createdDt: Date;

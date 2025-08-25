@@ -148,6 +148,7 @@ export class CouponEntity {
   @Column({
     name: "startedDt",
     type: "datetime",
+    precision: 0,
     default: null,
     nullable: true,
     comment: "쿠폰 유효기간 적용시 쿠폰 사용가능 시작일시",
@@ -157,6 +158,7 @@ export class CouponEntity {
   @Column({
     name: "endedDt",
     type: "datetime",
+    precision: 0,
     default: null,
     nullable: true,
     comment: "쿠폰 유효기간 적용시 쿠폰 사용종료 기한일시",
@@ -167,7 +169,9 @@ export class CouponEntity {
   @CreateDateColumn({
     name: "createdDt",
     type: "datetime",
+    precision: 0,
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 정보 생성일시",
   })
   createdDt: Date;
@@ -176,7 +180,10 @@ export class CouponEntity {
   @UpdateDateColumn({
     name: "updatedDt",
     type: "datetime",
+    precision: 0,
     nullable: true,
+    default: () => "CURRENT_TIMESTAMP(0)",
+    onUpdate: "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 정보 수정일시",
   })
   updatedDt: Date;
@@ -185,6 +192,7 @@ export class CouponEntity {
   @DeleteDateColumn({
     name: "deletedDt",
     type: "datetime",
+    precision: 0,
     nullable: true,
     comment: "쿠폰 정보 삭제일시",
   })
