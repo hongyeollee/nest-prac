@@ -46,6 +46,8 @@ import { CouponModule } from "./coupon/coupon.module";
        * ex. @Column(), @CreateDateColumn() 등과 같이 사용된 경우.
        * [요약]
        * 동작방식: @UpdateDateColum(), @Colum({ type: 'datetime' }) 수동 설정 후 newDate()로 저장
+       *      * 참고: typeorm에서 "datetime" 사용하는 경우에 ms(millisecond)까지 표현하려면 precision값 설정하지 않거나 설정시 원하는 값 표기
+       *               => second까지만 표현하려면 precision: 0으로 명시하여 설정처리
        * => timezone 적용됨
        * 동작방식: dataSource.query('SELECT now()'), new Date()
        * => timezone 적용 안 됨
