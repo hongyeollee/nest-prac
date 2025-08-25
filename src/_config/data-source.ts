@@ -1,4 +1,4 @@
-// src/_config/data-source.ts
+// migration 용도 data-source.ts
 import "dotenv/config";
 import { DataSource } from "typeorm";
 import { UserEntity } from "../../entities/user.entity";
