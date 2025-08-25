@@ -36,9 +36,7 @@ import { CouponModule } from "./coupon/coupon.module";
         CouponIssuedEntity,
         CouponIssuedLogEntity,
       ],
-      migrationsRun: false,
-      migrations: ["src/_migrations/*.ts"],
-      synchronize: process.env.NODE_ENV === "production" ? false : true,
+      synchronize: process.env.NODE_ENV === "production" ? false : false, // 개발초기에는 true로 사용해도 도지만, 마이그레이션을 쓰기 시작하면 false로 전환하여 사용해야함.
       /*
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
        * 'local': 서버의 로컬시간대
@@ -53,6 +51,7 @@ import { CouponModule } from "./coupon/coupon.module";
        * => timezone 적용됨
        * 동작방식: dataSource.query('SELECT now()'), new Date()
        * => timezone 적용 안 됨
+       * 해당 영역에서는 NestJS의 애플리케이션 작동만 신경쓰는 영역이기때문에 migration에 대한 정보가 필요없음. /_config/data-source.ts에서 migration cli에 대한 정보 담당.
        */
       timezone: "Z",
       logging: true, //개발환경에서 유용하게 활용함.
