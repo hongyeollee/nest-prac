@@ -39,7 +39,7 @@ export class PostEntity {
   @Column("datetime", {
     precision: 0,
     name: "createdDt",
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "게시글 데이터 생성일",
   })
   createdDt: Date;
@@ -47,7 +47,8 @@ export class PostEntity {
   @Column("datetime", {
     precision: 0,
     name: "updatedDt",
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
+    onUpdate: "CURRENT_TIMESTAMP(0)",
     comment: "게시글 데이터 수정일",
   })
   updatedDt: Date;

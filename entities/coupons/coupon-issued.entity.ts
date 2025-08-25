@@ -64,6 +64,7 @@ export class CouponIssuedEntity {
     precision: 0,
     name: "issuedDt",
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 발급정보 생성일시",
   })
   issuedDt: Date;

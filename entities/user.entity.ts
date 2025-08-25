@@ -71,6 +71,7 @@ export class UserEntity {
     precision: 0,
     name: "createdDt",
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "유저 데이터 생성일",
   })
   createdDt: Date;
@@ -81,6 +82,8 @@ export class UserEntity {
     precision: 0,
     name: "updatedDt",
     nullable: true,
+    default: () => "CURRENT_TIMESTAMP(0)",
+    onUpdate: "CURRENT_TIMESTAMP(0)",
     comment: "유저 데이터 수정일",
   })
   updatedDt: Date;

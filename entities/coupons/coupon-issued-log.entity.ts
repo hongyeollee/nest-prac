@@ -46,6 +46,7 @@ export class CouponIssuedLogEntity {
     precision: 0,
     name: "createdDt",
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 로그 생성일시",
   })
   createdDt: Date;

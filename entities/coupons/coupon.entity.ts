@@ -171,6 +171,7 @@ export class CouponEntity {
     type: "datetime",
     precision: 0,
     nullable: false,
+    default: () => "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 정보 생성일시",
   })
   createdDt: Date;
@@ -181,6 +182,8 @@ export class CouponEntity {
     type: "datetime",
     precision: 0,
     nullable: true,
+    default: () => "CURRENT_TIMESTAMP(0)",
+    onUpdate: "CURRENT_TIMESTAMP(0)",
     comment: "쿠폰 정보 수정일시",
   })
   updatedDt: Date;
