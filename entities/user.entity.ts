@@ -67,6 +67,8 @@ export class UserEntity {
   password: string;
 
   @CreateDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "createdDt",
     nullable: false,
     comment: "유저 데이터 생성일",
@@ -75,6 +77,8 @@ export class UserEntity {
 
   @Exclude()
   @UpdateDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "updatedDt",
     nullable: true,
     comment: "유저 데이터 수정일",
@@ -83,6 +87,8 @@ export class UserEntity {
 
   @Exclude()
   @DeleteDateColumn({
+    type: "datetime",
+    precision: 0,
     name: "deletedDt",
     nullable: true,
     comment: "유저 데이터 삭제일",

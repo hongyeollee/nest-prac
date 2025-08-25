@@ -52,6 +52,7 @@ export class CouponIssuedEntity {
   @Column({
     name: "usedDt",
     type: "datetime",
+    precision: 0,
     default: null,
     nullable: true,
     comment: "쿠폰 사용 일시",
@@ -59,8 +60,9 @@ export class CouponIssuedEntity {
   usedDt: Date;
 
   @CreateDateColumn({
-    name: "issuedDt",
     type: "datetime",
+    precision: 0,
+    name: "issuedDt",
     nullable: false,
     comment: "쿠폰 발급정보 생성일시",
   })
@@ -69,6 +71,7 @@ export class CouponIssuedEntity {
   @Column({
     name: "expiredDt",
     type: "datetime",
+    precision: 0,
     default: null,
     nullable: true,
     comment: "쿠폰 유효기간 일시",
