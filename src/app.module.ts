@@ -36,6 +36,8 @@ import { CouponModule } from "./coupon/coupon.module";
         CouponIssuedEntity,
         CouponIssuedLogEntity,
       ],
+      migrationsRun: false,
+      migrations: ["src/_migrations/*.ts"],
       synchronize: process.env.NODE_ENV === "production" ? false : true,
       /*
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
