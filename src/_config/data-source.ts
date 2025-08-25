@@ -24,5 +24,5 @@ export const AppDataSource = new DataSource({
     CouponIssuedEntity,
     CouponIssuedLogEntity,
   ],
-  migrations: ["src/migrations/*.ts"],
+  migrations: ["src/_migrations/*.ts"],
 });
