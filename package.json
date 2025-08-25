@@ -20,8 +20,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate",
-    "migration:run": "npm run typeorm -- migration:run -d src/_config/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/_config/data-source.ts"
+    "migration:run:dev": "NODE_ENV=devlopment npm run typeorm -- migration:run -d src/_config/data-source.ts",
+    "migration:run:prod": "NODE_ENV=production npm run typeorm -- migration:run -d src/_config/data-source.ts",
+    "migration:revert:dev": "NODE_ENV=devlopment npm run typeorm -- migration:revert -d src/_config/data-source.ts",
+    "migration:revert:prod": "NODE_ENV=production npm run typeorm -- migration:revert -d src/_config/data-source.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.848.0",

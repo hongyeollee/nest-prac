@@ -24,5 +24,9 @@ export const AppDataSource = new DataSource({
     CouponIssuedEntity,
     CouponIssuedLogEntity,
   ],
-  migrations: ["src/_migrations/*.ts"],
+  migrationsRun: false,
+  migrations:
+    process.env.NODE_ENV === "production"
+      ? ["dist/_migrations/*.js"]
+      : ["src/_migrations/*.ts"],
 });
