@@ -25,19 +25,22 @@ export class SimpleExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const statusText = HttpStatus[status] || "unknown status";
+
     const message =
       exception instanceof HttpException
         ? exception.message
         : "Internal server error";
 
-    // 핵심: API 경로 + 메서드 + 상태코드 + 메시지만 로깅
+    // 핵심: API 경로 + 메서드 + 상태코드[상태코드텍스트] + 메시지만 로깅
     this.logger.error(
-      `[${request.method}] ${request.url} -> ${status} (${message})`,
+      `[${request.method}] ${request.url} -> ${status}[${statusText}] (${message})`,
     );
 
     // 기본 Nest 응답 구조 유지
     const responseBody = {
       statusCode: status,
+      statusText,
       message: message,
       timestamp: new Date().toISOString(),
       path: request.url,
