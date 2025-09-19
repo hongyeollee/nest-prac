@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { CouponContorller } from "./coupon.controller";
+import { AdminCouponContorller } from "./admin-coupon.controller";
 import { CouponService } from "./coupon.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { CouponEntity } from "entities/coupons/coupon.entity";
@@ -18,7 +18,7 @@ import { UserModule } from "src/user/user.module";
     ]),
     UserModule,
   ],
-  controllers: [CouponContorller, CouponIssuedController],
+  controllers: [AdminCouponContorller, CouponIssuedController],
   providers: [CouponService, CouponIssuedService],
 })
 export class CouponModule {}

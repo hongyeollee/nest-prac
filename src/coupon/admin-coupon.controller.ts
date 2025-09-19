@@ -37,15 +37,18 @@ import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-respon
 import { UpdateCouponDTO } from "./_dto/update-coupon.dto";
 import { ResponseSuccessGetCouponListDTO } from "./_dto/response-success-get-coupon-list.dto";
 import { ResponseSuccessGetCouponDTO } from "./_dto/response-success-get-coupon.dto";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { RolesGuard } from "src/auth/security/role.guard";
 
-@Controller("coupon")
-@ApiTags("coupon")
-export class CouponContorller {
+@Controller("admin/coupon")
+@ApiTags("어드민 쿠폰 관리(admin/coupon)")
+export class AdminCouponContorller {
   constructor(private readonly couponService: CouponService) {}
 
   @Post()
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     summary: "쿠폰 생성",
     description: `
@@ -93,7 +96,8 @@ export class CouponContorller {
 
   @Delete(":id")
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     summary: "쿠폰 삭제",
     description: "쿠폰을 삭제합니다.",
@@ -125,7 +129,8 @@ export class CouponContorller {
 
   @Put(":id")
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     summary: "쿠폰 정보 수정",
     description: "쿠폰의 정보를 수정합니다.",
@@ -176,7 +181,8 @@ export class CouponContorller {
 
   @Get(":id")
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     summary: "쿠폰 단건 조회",
     description: "쿠폰 단건 정보를 조회합니다.",
@@ -207,7 +213,8 @@ export class CouponContorller {
 
   @Get()
   @ApiBearerAuth("accessToken")
-  @UseGuards(JwtAuthGuard)
+  @Roles("ADMIN")
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     summary: "쿠폰 목록 조회",
     description: "쿠폰 목록을 페이지네이션 방식으로 조회합니다.",
