@@ -2,7 +2,7 @@ import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import * as cookieParser from "cookie-parser";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import { ConsoleLogger, ValidationPipe } from "@nestjs/common";
+import { ConsoleLogger, RequestMethod, ValidationPipe } from "@nestjs/common";
 import * as fs from "fs";
 import * as express from "express"; //순수 애플리케이션에서 http->https 리다이렉트시 사용
 import * as http from "http"; //순수 애플리케이션에서 http->https 리다이렉트시 사용
@@ -31,7 +31,9 @@ async function bootstrap() {
   const httpAdapterHost = app.get(HttpAdapterHost);
 
   // 전역 프리픽스
-  app.setGlobalPrefix("api", { exclude: ["health"] });
+  app.setGlobalPrefix("api", {
+    exclude: [{ path: "/", method: RequestMethod.GET }],
+  });
   // 보안헤더 추가시 헬멧 패키지 추가
   // app.use(helmet());
   // 차후 필요시 cors 추가
