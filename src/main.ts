@@ -30,6 +30,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const httpAdapterHost = app.get(HttpAdapterHost);
 
+  // 전역 프리픽스
+  app.setGlobalPrefix("api", { exclude: ["health"] });
+  // 보안헤더 추가시 헬멧 패키지 추가
+  // app.use(helmet());
+  // 차후 필요시 cors 추가
+
   const port = isProduction()
     ? process.env.PROD_PORT
     : isDevelopment()
