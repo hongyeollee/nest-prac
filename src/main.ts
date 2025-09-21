@@ -14,6 +14,11 @@ import {
   isProduction,
 } from "./_config/config";
 import { SimpleExceptionFilter } from "./_common/simple-exception.filter";
+import {
+  faviconFast,
+  methodWhiteList,
+  pathBlocker,
+} from "./_common/_middlewares/hardening.middleware";
 
 const logger = new ConsoleLogger("Application", { timestamp: true });
 
@@ -29,6 +34,10 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
   const httpAdapterHost = app.get(HttpAdapterHost);
+
+  app.use(faviconFast);
+  app.use(methodWhiteList);
+  app.use(pathBlocker);
 
   // 전역 프리픽스
   app.setGlobalPrefix("api", {
