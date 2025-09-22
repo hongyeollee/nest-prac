@@ -2,8 +2,9 @@ import { HttpStatus } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 
 /** 불필요한 favicon 404 소음 제거 */
-export function faviconFast(req: Request, res: Response, nest: NextFunction) {
+export function faviconFast(req: Request, res: Response, next: NextFunction) {
   if (req.path === "/favicon.ico") return res.sendStatus(204); //본문 없이 정상
+  next();
 }
 
 /** 허용 HTTP 메소드 화이트리스트(Swagger/브라우저를 위해 HEAD, OPTIONS 허용) */
