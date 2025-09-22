@@ -13,7 +13,7 @@ import {
   isLocal,
   isProduction,
 } from "./_config/config";
-import { SimpleExceptionFilter } from "./_common/simple-exception.filter";
+import { UnifiedExceptionFilter } from "./_common/unified-exception.filter";
 import {
   faviconFast,
   methodWhiteList,
@@ -85,7 +85,7 @@ async function bootstrap() {
   SwaggerModule.setup("api/docs", app, documentFactory);
 
   app.use(cookieParser());
-  app.useGlobalFilters(new SimpleExceptionFilter(httpAdapterHost));
+  app.useGlobalFilters(new UnifiedExceptionFilter(httpAdapterHost));
 
   await app.listen(port, "0.0.0.0");
   logger.log(`Application Listening on port ${port}🚀. ENV: ${currentENV()}`);
