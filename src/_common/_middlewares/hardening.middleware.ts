@@ -32,7 +32,11 @@ export function methodWhiteList(
 export function pathBlocker(req: Request, res: Response, next: NextFunction) {
   const p = req.path.toLowerCase();
 
-  const denyExact = new Set<string>(["/containers/json"]);
+  const denyExact = new Set<string>([
+    "/containers/json",
+    "/server-status",
+    "/config.json",
+  ]);
 
   const denyPrefixes = [
     "/.git",
@@ -49,6 +53,8 @@ export function pathBlocker(req: Request, res: Response, next: NextFunction) {
     "/lib/phpunit",
     "/public/vendor/phpunit",
     "/laravel/vendor/phpunit",
+    "/owa",
+    "/telescope",
   ];
 
   const denyExt = new Set([".php", ".aspx"]);
