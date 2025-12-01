@@ -56,6 +56,17 @@ import { CouponModule } from "./coupon/coupon.module";
       timezone: "Z",
       logging: true, //개발환경에서 유용하게 활용함.
       // logging: ['error', 'warn'] //운영 환경에서는 에러위주, 추가적으로 하면 경고까지도 하는 경우가 일반적인것 같음(chat GPT 내용 확인)
+
+      /**
+       * extra에 대해서 추가적인 확인이 필요하고 실제로 typeorm에서 해당 extra가 적용이 되는지 확인이 필요함.
+       */
+      extra: {
+        connectionLimit: 10,
+        waitForConnections: true,
+        queueLimit: 0,
+        maxIdle: 5,
+        idleTimeout: 60000,
+      },
     }),
 
     //module
