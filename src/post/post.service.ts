@@ -52,7 +52,14 @@ export class PostService {
    * @param name
    * @returns
    */
-  async selectPostList(name?: string): Promise<PostEntity[]> {
+  async selectPostList(
+    page: number,
+    limit: number,
+    name?: string,
+  ): Promise<{
+    list: PostEntity[];
+    totalCount: number;
+  }> {
     let userUuid: string | undefined;
     if (name) {
       const userInfo = await this.getUserInfoByName(name);
@@ -68,10 +75,18 @@ export class PostService {
     if (name) {
       queryBuilder.andWhere("post.userUuid = :userUuid", { userUuid });
     }
+    queryBuilder
+      .offset((page - 1) * limit)
+      .limit(limit)
+      .orderBy("post.createdDt", "DESC");
 
     const list = await queryBuilder.getRawMany();
+    const totalCount = await queryBuilder.getCount();
 
-    return list;
+    return {
+      list,
+      totalCount,
+    };
   }
 
   /**
