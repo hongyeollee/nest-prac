@@ -12,7 +12,9 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
@@ -94,8 +96,72 @@ export class PostController {
   }
 
   @Get("list")
-  async selectPostList(@Query("userUuid") userUuid?: string) {
-    return await this.postService.selectPostList(userUuid);
+  @ApiOperation({
+    summary: "게시글 목록 조회",
+    description: `
+      게시글 목록을 조회합니다.
+      목록 조회는 로그인하지 않아도 조회할 수 있습니다.
+      * 목록 검색 조회는 현재는 작성자 검색에 한해서 조회 가능합니다.
+    `,
+  })
+  @ApiQuery({
+    name: "name",
+    required: false,
+    description: "작성자를 입력합니다.",
+    schema: {
+      type: "string",
+      nullable: true,
+      example: "강연수",
+    },
+  })
+  @ApiOkResponse({
+    description: "게시글 목록 조회 결과",
+    schema: {
+      type: "object",
+      properties: {
+        message: { type: "string", example: "success" },
+        statusCode: { type: "number", example: 200 },
+        list: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "number", example: 1 },
+              userUuid: {
+                type: "uuid",
+                example: "57581e1d-ee7f-4aba-98cb-5a32dd525197",
+              },
+              title: { type: "string", example: "제목입니다." },
+              content: { type: "string", example: "내용입니다." },
+              createdDt: {
+                type: "string",
+                format: "date-time",
+                example: "2025-12-08T10:00:00.000Z",
+              },
+              updatedDt: {
+                type: "string",
+                format: "date-time",
+                example: "2025-12-08T10:00:00.000Z",
+              },
+              deletedDt: {
+                type: "string",
+                format: "date-time",
+                example: null,
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async selectPostList(@Query("name") name?: string) {
+    const list = await this.postService.selectPostList(name);
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+      list,
+    };
   }
 
   @Get()
