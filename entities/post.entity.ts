@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { UserEntity } from "./user.entity";
+import { Exclude } from "class-transformer";
 
 @Entity("post")
 export class PostEntity {
@@ -15,6 +16,7 @@ export class PostEntity {
   })
   id: number;
 
+  @Exclude()
   @Column("varchar", {
     name: "userUuid",
     nullable: true,
@@ -57,7 +59,7 @@ export class PostEntity {
   @Column("datetime", {
     precision: 0,
     name: "deletedDt",
-    default: () => "CURRENT_TIMESTAMP",
+    default: null,
     nullable: true,
     comment: "게시글 데이터 삭제일",
   })

@@ -4,8 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { instanceToPlain } from "class-transformer";
 import { PostEntity } from "entities/post.entity";
 import { UserEntity } from "entities/user.entity";
+import { Payload } from "src/auth/security/user.payload.interface";
 import { UserService } from "src/user/user.service";
 import { DataSource, IsNull, Not, Repository } from "typeorm";
 
@@ -19,6 +21,25 @@ export class PostService {
 
     private dataSource: DataSource,
   ) {}
+
+  /**
+   * 게시글 생성
+   */
+  async create(
+    user: Payload,
+    title: string,
+    content: string,
+  ): Promise<PostEntity> {
+    const post = this.postRepository.create({
+      title,
+      content,
+      userUuid: user.userUuid,
+    });
+
+    const create = await this.postRepository.save(post);
+
+    return create;
+  }
 
   /**
    * 게시글 리스트 조회
