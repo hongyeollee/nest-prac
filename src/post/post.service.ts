@@ -1,15 +1,15 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { instanceToPlain } from "class-transformer";
 import { PostEntity } from "entities/post.entity";
 import { UserEntity } from "entities/user.entity";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { UserService } from "src/user/user.service";
-import { DataSource, IsNull, Not, Repository } from "typeorm";
+import { DataSource, IsNull, Repository } from "typeorm";
 
 @Injectable()
 export class PostService {
@@ -20,6 +20,13 @@ export class PostService {
     private userService: UserService,
 
     private dataSource: DataSource,
+
+    /**
+     * userRepository는 user서비스에서 getUser메소드 로직 개선되면 삭제
+     * 삭제된 userRepository 관련 부분은 userService에서 의존받아 사용할 수 있도록 처리
+     */
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
   ) {}
 
   /**
@@ -45,21 +52,26 @@ export class PostService {
    * 게시글 리스트 조회
    * @returns
    */
-  async selectPostList(userUuid: string): Promise<any> {
+  async selectPostList(name?: string): Promise<PostEntity[]> {
+    let userUuid: string | undefined;
+    if (name) {
+      const userInfo = await this.getUserInfoByName(name);
+      if (!userInfo) throw new NotFoundException("not exist user");
+      userUuid = userInfo.userUuid;
+    }
+
     const queryBuilder = this.dataSource
       .createQueryBuilder()
       .select(["*"])
-      .from(PostEntity, "")
-      .where("deletedDt IS NULL");
-    if (userUuid) {
-      queryBuilder.andWhere(`userUuid = '${userUuid}'`);
+      .from(PostEntity, "post")
+      .where("post.deletedDt IS NULL");
+    if (name) {
+      queryBuilder.andWhere("post.userUuid = :userUuid", { userUuid });
     }
 
     const list = await queryBuilder.getRawMany();
 
-    return {
-      list,
-    };
+    return list;
   }
 
   /**
@@ -184,4 +196,14 @@ export class PostService {
   }
 
   //여러개의 값을 한번에 불러올때 promise.all을 사용해서 성능을 효율화 하는 방법 테스트 시도
+
+  /**
+   * 임시 메소드. userRepository 관련 처리되면 메소드 삭제하고
+   * userService에서 의존받아서 사용할 수 있도록 처리.
+   */
+  private async getUserInfoByName(name: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({
+      where: { name, deletedDt: IsNull() },
+    });
+  }
 }
