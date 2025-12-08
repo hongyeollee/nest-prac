@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpStatus,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -50,6 +49,7 @@ export class PostService {
 
   /**
    * 게시글 리스트 조회
+   * @param name
    * @returns
    */
   async selectPostList(name?: string): Promise<PostEntity[]> {
