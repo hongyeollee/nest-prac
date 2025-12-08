@@ -108,6 +108,28 @@ export class PostController {
     `,
   })
   @ApiQuery({
+    name: "page",
+    required: true,
+    description: "페이지 번호",
+    schema: {
+      type: "number",
+      nullable: false,
+      example: 1,
+      default: 1,
+    },
+  })
+  @ApiQuery({
+    name: "limit",
+    required: true,
+    description: "페이지에 불러올 데이터 개수",
+    schema: {
+      type: "number",
+      nullable: false,
+      example: 10,
+      default: 10,
+    },
+  })
+  @ApiQuery({
     name: "name",
     required: false,
     description: "작성자를 입력합니다.",
@@ -131,7 +153,8 @@ export class PostController {
             properties: {
               id: { type: "number", example: 1 },
               userUuid: {
-                type: "uuid",
+                type: "string",
+                format: "uuid",
                 example: "57581e1d-ee7f-4aba-98cb-5a32dd525197",
               },
               title: { type: "string", example: "제목입니다." },
@@ -154,20 +177,30 @@ export class PostController {
             },
           },
         },
+        totalCount: {
+          type: "number",
+          example: 1004,
+        },
       },
     },
   })
-  async selectPostList(@Query("name") name?: string): Promise<{
+  async selectPostList(
+    @Query("page") page: number = 1,
+    @Query("limit") limit: number = 10,
+    @Query("name") name?: string,
+  ): Promise<{
     message: string;
     statusCode: number;
     list: PostEntity[];
+    totalCount: number;
   }> {
-    const list = await this.postService.selectPostList(name);
+    const list = await this.postService.selectPostList(page, limit, name);
 
     return {
       message: "success",
       statusCode: HttpStatus.OK,
-      list,
+      list: list.list,
+      totalCount: list.totalCount,
     };
   }
 
@@ -284,12 +317,33 @@ export class PostController {
     };
   }
 
+  /**
+   * 미사용
+   * @param userUuid
+   * @returns
+   */
   @Get("user")
+  @ApiOperation({
+    summary: "게시글 리스트 조회",
+    deprecated: true,
+    description: "사용하지 않는 api 입니다.",
+  })
   async selectPostByUser(@Query("userUuid") userUuid: string) {
     return await this.postService.selectPostByUser(userUuid);
   }
 
+  /**
+   * 미사용
+   * @param offset
+   * @param limit
+   * @returns
+   */
   @Get("users")
+  @ApiOperation({
+    summary: "각 유저리스트별에 해당하는 게시글 리스트 조회",
+    deprecated: true,
+    description: "사용하지 않는 api 입니다.",
+  })
   async selectPostListByUsers(
     @Query("offset") offset?: number,
     @Query("limit") limit?: number,
