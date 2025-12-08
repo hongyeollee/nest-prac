@@ -22,6 +22,7 @@ import { JwtAuthGuard } from "src/auth/security/auth.guard";
 import { User } from "src/auth/decorator/user.decorator";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { instanceToPlain } from "class-transformer";
+import { PostEntity } from "entities/post.entity";
 @Controller("post")
 @ApiTags("게시판 post")
 export class PostController {
@@ -154,7 +155,11 @@ export class PostController {
       },
     },
   })
-  async selectPostList(@Query("name") name?: string) {
+  async selectPostList(@Query("name") name?: string): Promise<{
+    message: string;
+    statusCode: number;
+    list: PostEntity[];
+  }> {
     const list = await this.postService.selectPostList(name);
 
     return {
