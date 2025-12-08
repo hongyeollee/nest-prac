@@ -9,9 +9,11 @@ import {
 } from "@nestjs/common";
 import { PostService } from "./post.service";
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
@@ -170,8 +172,116 @@ export class PostController {
   }
 
   @Get()
-  async selecPost(@Query("id") id: number) {
-    return await this.postService.selectPost(id);
+  @ApiBearerAuth("accessToken")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "게시글 상세조회",
+    description: "사용자가 단일 게시글을 상세조회합니다.",
+  })
+  @ApiQuery({
+    description: "게시글의 id",
+    name: "id",
+    type: "number",
+    example: 1,
+  })
+  @ApiUnauthorizedResponse({
+    description: "로그인하지 않은 사용자가 게시글을 조회하려는 경우",
+    example: {
+      statusCode: 401,
+      statusText: "UNAUTHORIZED",
+      message: "Unauthorized",
+      timestamp: "2025-12-08T05:52:00.607Z",
+      path: "/api/post?id=100",
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "존재하지 않는 게시글을 조회하는 경우",
+    example: {
+      statusCode: 404,
+      statusText: "NOT_FOUND",
+      message: "not exist post",
+      timestamp: "2025-12-08T05:53:22.382Z",
+      path: "/api/post?id=100",
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      "게시글 id값 파라미터를 받지 못한 경우(id 파라미터는 필수 값입니다.)",
+    example: {
+      statusCode: 400,
+      statusText: "BAD_REQUEST",
+      message: "not exist id parameter",
+      timestamp: "2025-12-08T05:53:22.382Z",
+      path: "/api/post?id=100",
+    },
+  })
+  @ApiOkResponse({
+    description: "게시글 상세조회 결과",
+    schema: {
+      type: "object",
+      properties: {
+        message: { type: "string", example: "success" },
+        statusCode: { type: "number", example: 200 },
+        info: {
+          type: "object",
+          properties: {
+            id: { type: "number", example: 1 },
+            userUuid: {
+              type: "string",
+              format: "uuid",
+              example: "57581e1b-ea7d-5abh-98cb-5a32dd525193",
+            },
+            title: { type: "string", example: "제목입니다." },
+            content: { type: "string", example: "내용입니다." },
+            createdDt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-08T10:00:00.000Z",
+            },
+            updatedDt: {
+              type: "string",
+              format: "date-time",
+              example: "2025-12-08T10:00:00.000Z",
+            },
+            user: {
+              type: "object",
+              properties: {
+                userUuid: {
+                  type: "string",
+                  format: "uuid",
+                  example: "57581e1b-ea7d-5abh-98cb-5a32dd525193",
+                },
+                userType: {
+                  type: "string",
+                  example: "GENERAL",
+                },
+                name: {
+                  type: "string",
+                  example: "홍길동",
+                },
+                email: {
+                  type: "string",
+                  example: "hong@example.com",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async selecPost(@Query("id") id: number): Promise<{
+    message: string;
+    statusCode: HttpStatus;
+    info: PostEntity;
+  }> {
+    const post = await this.postService.selectPost(id);
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+      info: post,
+    };
   }
 
   @Get("user")

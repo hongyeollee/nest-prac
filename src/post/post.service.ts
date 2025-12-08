@@ -79,26 +79,41 @@ export class PostService {
    * @param id
    * @returns
    */
-  async selectPost(id: number): Promise<any> {
+  async selectPost(id: number): Promise<PostEntity> {
     if (!id) {
       throw new BadRequestException("not exist id parameter");
     }
 
-    const result = await this.postRepository
-      .findOne({
-        where: {
-          id,
+    const post = await this.postRepository.findOne({
+      where: {
+        id,
+        deletedDt: IsNull(),
+        user: {
           deletedDt: IsNull(),
         },
-      })
-      .then((res) => {
-        if (!res) {
-          throw new NotFoundException("not exist post");
-        }
-        return res;
-      });
+      },
+      relations: {
+        user: true,
+      },
+      select: {
+        id: true,
+        userUuid: true,
+        title: true,
+        content: true,
+        createdDt: true,
+        updatedDt: true,
+        user: {
+          userUuid: true,
+          userType: true,
+          name: true,
+          email: true,
+        },
+      },
+    });
 
-    return result;
+    if (!post) throw new NotFoundException("not exist post");
+
+    return post;
   }
 
   /**
