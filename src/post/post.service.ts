@@ -116,6 +116,7 @@ export class PostService {
         userUuid: true,
         title: true,
         content: true,
+        hits: true,
         createdDt: true,
         updatedDt: true,
         user: {
@@ -128,6 +129,9 @@ export class PostService {
     });
 
     if (!post) throw new NotFoundException("not exist post");
+    console.log(post.hits);
+
+    await this.postRepository.update({ id }, { hits: post.hits + 1 });
 
     return post;
   }

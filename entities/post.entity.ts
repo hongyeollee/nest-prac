@@ -41,6 +41,15 @@ export class PostEntity {
   })
   content: string;
 
+  @Column("int", {
+    unsigned: true,
+    name: "hits",
+    nullable: false,
+    default: 0,
+    comment: "조회수",
+  })
+  hits: number = 0;
+
   @CreateDateColumn({
     type: "datetime",
     precision: 0,
