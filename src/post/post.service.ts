@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -138,15 +139,42 @@ export class PostService {
    */
   async softDeletePost(user: Payload, id: number): Promise<UpdateResult> {
     const post = await this.selectPost(id);
-
-    if (user.userType !== "ADMIN" && post.userUuid !== user.userUuid)
-      throw new BadRequestException("not equal user");
+    this.assertOwnership(user, post.userUuid);
 
     const softDelete = await this.postRepository.softDelete({
       id: post.id,
     });
 
     return softDelete;
+  }
+
+  /**
+   * 게시글 수정
+   * @param user
+   * @param id
+   * @param title
+   * @param content
+   * @returns
+   */
+  async updatePost(
+    user: Payload,
+    id: number,
+    title?: string,
+    content?: string,
+  ): Promise<UpdateResult> {
+    const post = await this.selectPost(id);
+    this.assertOwnership(user, post.userUuid);
+
+    const updateData: Partial<PostEntity> = {};
+    if (title) updateData.title = title;
+    else updateData.title = post.title;
+    if (content) updateData.content = content;
+    if (Object.keys(updateData).length === 0) {
+      throw new NotAcceptableException("no update");
+    }
+
+    const update = await this.postRepository.update({ id }, updateData);
+    return update;
   }
 
   /**
@@ -255,5 +283,11 @@ export class PostService {
     return await this.userRepository.findOne({
       where: { name, deletedDt: IsNull() },
     });
+  }
+
+  private assertOwnership(user: Payload, postUserUuid: string): void {
+    const isAdmin = user.userType === "ADMIN";
+    const isOwner = user.userUuid === postUserUuid;
+    if (!isAdmin && !isOwner) throw new BadRequestException("not equal user");
   }
 }

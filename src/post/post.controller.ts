@@ -5,7 +5,9 @@ import {
   Delete,
   Get,
   HttpStatus,
+  Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from "@nestjs/common";
@@ -431,6 +433,127 @@ export class PostController {
       message: "success",
       statusCode: HttpStatus.OK,
       info: softDelete,
+    };
+  }
+
+  @Put(":id")
+  @ApiBearerAuth("accessToken")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "게시글 수정",
+    description: "사용자가 게시글을 수정합니다.",
+  })
+  @ApiBody({
+    description: "사용자가 게시글의 제목 또는 내용을 수정하는 정보입니다.",
+    schema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          example: "제목을 수정합니다.",
+          description: "게시글의 제목을 수정합니다.",
+          nullable: true,
+        },
+        content: {
+          type: "string",
+          example: "내용입니다.",
+          description: "게시글의 내용을 수정합니다.",
+          nullable: true,
+        },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: "로그인하지 않은 사용자가 게시글을 조회하려는 경우",
+    example: {
+      statusCode: 401,
+      statusText: "UNAUTHORIZED",
+      message: "Unauthorized",
+      timestamp: "2025-12-08T05:52:00.607Z",
+      path: "/api/post/100",
+    },
+  })
+  @ApiOkResponse({
+    description: "게시글 수정 성공",
+    schema: {
+      type: "object",
+      properties: {
+        message: { type: "string", example: "success" },
+        statusCode: { type: "numebr", example: 200 },
+        info: {
+          type: "object",
+          properties: {
+            generatedMaps: { type: "array", example: [] },
+            raw: { type: "array", example: [] },
+            affected: { type: "number", example: 1 },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "잘못된 요청 발생 케이스들",
+    content: {
+      "application/json": {
+        examples: {
+          softDeleteFail: {
+            summary: "게시글 수정 실패",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "fail delete",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post/2",
+            },
+          },
+          notExistedIdParameter: {
+            summary: "id 파라미터 없는 경우",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "not exist id parameter",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post/2",
+            },
+          },
+          notEqualUser: {
+            summary: "ADMIN 또는 게시글 작성자가 아닌 사람이 수정하는 경우",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "not equal user",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post/2",
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "존재하지 않는 게시글을 조회하는 경우",
+    example: {
+      statusCode: 404,
+      statusText: "NOT_FOUND",
+      message: "not exist post",
+      timestamp: "2025-12-08T05:53:22.382Z",
+      path: "/api/post/100",
+    },
+  })
+  async updatePost(
+    @User() user: Payload,
+    @Param("id") id: number,
+    @Body("title") title?: string,
+    @Body("content") content?: string,
+  ) {
+    const udpate = await this.postService.updatePost(user, id, title, content);
+    if (udpate.affected !== 1) throw new BadRequestException("fail delete");
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+      info: udpate,
     };
   }
 
