@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Post,
@@ -17,6 +19,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
@@ -25,6 +28,7 @@ import { User } from "src/auth/decorator/user.decorator";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { instanceToPlain } from "class-transformer";
 import { PostEntity } from "entities/post.entity";
+import { UpdateResult } from "typeorm";
 @Controller("post")
 @ApiTags("게시판 post")
 export class PostController {
@@ -314,6 +318,119 @@ export class PostController {
       message: "success",
       statusCode: HttpStatus.OK,
       info: post,
+    };
+  }
+
+  @Delete()
+  @ApiBearerAuth("accessToken")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "게시글 삭제",
+    description: `
+      게시글을 삭제합니다.
+      게시글 삭제는 ADMIN과 작성자 본인만 삭제 가능합니다.
+    `,
+  })
+  @ApiQuery({
+    description: "게시글의 id",
+    name: "id",
+    type: "number",
+    example: 1,
+  })
+  @ApiUnauthorizedResponse({
+    description: "로그인하지 않은 사용자가 게시글을 조회하려는 경우",
+    example: {
+      statusCode: 401,
+      statusText: "UNAUTHORIZED",
+      message: "Unauthorized",
+      timestamp: "2025-12-08T05:52:00.607Z",
+      path: "/api/post?id=100",
+    },
+  })
+  @ApiOkResponse({
+    description: "게시글 삭제 성공",
+    schema: {
+      type: "object",
+      properties: {
+        message: { type: "string", example: "success" },
+        statusCode: { type: "numebr", example: 200 },
+        info: {
+          type: "object",
+          properties: {
+            generatedMaps: { type: "array", example: [] },
+            raw: { type: "array", example: [] },
+            affected: { type: "number", example: 1 },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "잘못된 요청 발생 케이스들",
+    content: {
+      "application/json": {
+        examples: {
+          softDeleteFail: {
+            summary: "게시글 삭제 실패",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "fail delete",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post?id=2",
+            },
+          },
+          notExistedIdParameter: {
+            summary: "id 파라미터 없는 경우",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "not exist id parameter",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post?id=2",
+            },
+          },
+          notEqualUser: {
+            summary: "ADMIN 또는 게시글 작성자가 아닌 사람이 삭제하는 경우",
+            value: {
+              statusCode: HttpStatus.BAD_REQUEST,
+              statusText: "BAD_REQUEST",
+              message: "not equal user",
+              timestamp: "2025-12-09T02:22:55.812Z",
+              path: "/api/post?id=2",
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "존재하지 않는 게시글을 조회하는 경우",
+    example: {
+      statusCode: 404,
+      statusText: "NOT_FOUND",
+      message: "not exist post",
+      timestamp: "2025-12-08T05:53:22.382Z",
+      path: "/api/post?id=100",
+    },
+  })
+  async softDeletePost(
+    @User() user: Payload,
+    @Query("id") id: number,
+  ): Promise<{
+    message: string;
+    statusCode: number;
+    info: UpdateResult;
+  }> {
+    const softDelete = await this.postService.softDeletePost(user, id);
+
+    if (softDelete.affected !== 1) throw new BadRequestException("fail delete");
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+      info: softDelete,
     };
   }
 
