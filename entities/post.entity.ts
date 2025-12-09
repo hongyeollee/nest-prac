@@ -1,9 +1,12 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { UserEntity } from "./user.entity";
 import { Exclude } from "class-transformer";
@@ -38,7 +41,8 @@ export class PostEntity {
   })
   content: string;
 
-  @Column("datetime", {
+  @CreateDateColumn({
+    type: "datetime",
     precision: 0,
     name: "createdDt",
     default: () => "CURRENT_TIMESTAMP(0)",
@@ -46,7 +50,8 @@ export class PostEntity {
   })
   createdDt: Date;
 
-  @Column("datetime", {
+  @UpdateDateColumn({
+    type: "datetime",
     precision: 0,
     name: "updatedDt",
     default: () => "CURRENT_TIMESTAMP(0)",
@@ -56,7 +61,8 @@ export class PostEntity {
   })
   updatedDt: Date | null;
 
-  @Column("datetime", {
+  @DeleteDateColumn({
+    type: "datetime",
     precision: 0,
     name: "deletedDt",
     default: null,

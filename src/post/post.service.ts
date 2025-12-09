@@ -8,7 +8,7 @@ import { PostEntity } from "entities/post.entity";
 import { UserEntity } from "entities/user.entity";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { UserService } from "src/user/user.service";
-import { DataSource, IsNull, Repository } from "typeorm";
+import { DataSource, IsNull, Repository, UpdateResult } from "typeorm";
 
 @Injectable()
 export class PostService {
@@ -132,7 +132,26 @@ export class PostService {
   }
 
   /**
+   * 게시글 논리삭제
+   * @param id
+   * @returns
+   */
+  async softDeletePost(user: Payload, id: number): Promise<UpdateResult> {
+    const post = await this.selectPost(id);
+
+    if (user.userType !== "ADMIN" && post.userUuid !== user.userUuid)
+      throw new BadRequestException("not equal user");
+
+    const softDelete = await this.postRepository.softDelete({
+      id: post.id,
+    });
+
+    return softDelete;
+  }
+
+  /**
    * 유저가 작성한 게시글 리스트 조회
+   * (현재 deprecate)
    * @param userUuid
    * @returns
    */
@@ -180,6 +199,7 @@ export class PostService {
 
   /**
    * 각 유저리스트별에 해당하는 게시글 리스트 조회
+   * (현재 deprecate)
    * @returns
    */
   async selectPostListByUsers(offset?: number, limit?: number): Promise<any> {
