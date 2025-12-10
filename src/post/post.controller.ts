@@ -20,6 +20,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiResponse,
   ApiTags,
@@ -443,6 +444,12 @@ export class PostController {
     summary: "게시글 수정",
     description: "사용자가 게시글을 수정합니다.",
   })
+  @ApiParam({
+    name: "id",
+    required: true,
+    description: "수정할 게시글 id",
+    schema: { type: "int", example: 1 },
+  })
   @ApiBody({
     description: "사용자가 게시글의 제목 또는 내용을 수정하는 정보입니다.",
     schema: {
@@ -554,6 +561,72 @@ export class PostController {
       message: "success",
       statusCode: HttpStatus.OK,
       info: udpate,
+    };
+  }
+
+  @Post(":postId/like")
+  @ApiBearerAuth("accessToken")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "게시글 좋아요/좋아요 해제",
+    description: `
+      특정 게시글에 대해 현재 사용자의 좋아요 상태를 토글합니다.
+      - 처음 요청 및 좋아요 해지 후 다시 좋아요: 좋아요 등록 (true 반환)
+      - 좋아요가 이미 된 상태에서 다시 요청: 좋아요 해제 (false 반환)
+    `,
+  })
+  @ApiParam({
+    name: "postId",
+    required: true,
+    description: "좋아요를 토글할 게시글 id",
+    schema: { type: "integer", example: 1 },
+  })
+  @ApiUnauthorizedResponse({
+    description: "로그인하지 않은 사용자가 게시글을 조회하려는 경우",
+    example: {
+      statusCode: 401,
+      statusText: "UNAUTHORIZED",
+      message: "Unauthorized",
+      timestamp: "2025-12-08T05:52:00.607Z",
+      path: "/api/post/100/like",
+    },
+  })
+  @ApiOkResponse({
+    description: "좋아요 토글 결과",
+    schema: {
+      type: "object",
+      properties: {
+        message: { type: "string", example: "success" },
+        statusCode: { type: "number", example: 200 },
+        isLiked: {
+          type: "boolean",
+          example: true,
+          description:
+            "현재 기준 좋아요 상태 (true: 좋아요됨, false: 좋아요 해제됨)",
+        },
+      },
+    },
+  })
+  @ApiNotFoundResponse({
+    description: "존재하지 않는 게시글을 조회하는 경우",
+    example: {
+      statusCode: 404,
+      statusText: "NOT_FOUND",
+      message: "not exist post",
+      timestamp: "2025-12-08T05:53:22.382Z",
+      path: "/api/post/100/like",
+    },
+  })
+  async likePost(
+    @User() user: Payload,
+    @Param("postId") postId: number,
+  ): Promise<{ message: string; statusCode: number; isLiked: boolean }> {
+    const postLike = await this.postService.postLike(user, postId);
+
+    return {
+      message: "success",
+      statusCode: HttpStatus.OK,
+      isLiked: postLike,
     };
   }
 
