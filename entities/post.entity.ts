@@ -50,6 +50,15 @@ export class PostEntity {
   })
   hits: number = 0;
 
+  @Column("int", {
+    unsigned: true,
+    name: "likes",
+    nullable: true,
+    default: 0,
+    comment: "게시글 좋아요 수",
+  })
+  likes: number = 0;
+
   @CreateDateColumn({
     type: "datetime",
     precision: 0,

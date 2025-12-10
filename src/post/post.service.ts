@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { PostLikeEntity } from "entities/post-like.entity";
 import { PostEntity } from "entities/post.entity";
 import { UserEntity } from "entities/user.entity";
 import { Payload } from "src/auth/security/user.payload.interface";
@@ -27,6 +28,9 @@ export class PostService {
      */
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+
+    @InjectRepository(PostLikeEntity)
+    private postLikeRepository: Repository<PostLikeEntity>,
   ) {}
 
   /**
@@ -117,6 +121,7 @@ export class PostService {
         title: true,
         content: true,
         hits: true,
+        likes: true,
         createdDt: true,
         updatedDt: true,
         user: {
@@ -179,6 +184,64 @@ export class PostService {
 
     const update = await this.postRepository.update({ id }, updateData);
     return update;
+  }
+
+  /**
+   * 게시글 좋아요 또는 좋아요 해지
+   * 반환되는 값의 boolean은 해당 게시글의 좋아요인 경우 true, 아닌경우 false를 반환함.
+   */
+  async postLike(user: Payload, postId: number): Promise<boolean> {
+    const post = await this.postRepository.findOne({
+      where: { id: postId, deletedDt: IsNull() },
+    });
+    if (!post) throw new NotFoundException("not exist post");
+
+    const wherePostLike = { userId: user.id, postId: post.id };
+    const postLike = await this.postLikeRepository.findOne({
+      where: wherePostLike,
+    });
+    const hasRecord = !!postLike;
+    const isCurrentlyLiked = !!postLike?.actionDt;
+
+    if (!hasRecord) {
+      //처음 좋아요하는 경우
+      await this.dataSource.transaction(async (manager) => {
+        await manager.insert(PostLikeEntity, {
+          userId: user.id,
+          postId: post.id,
+        });
+
+        await manager.update(
+          PostEntity,
+          { id: post.id },
+          { likes: () => "likes + 1" }, // post.likes + 1 보다 동시성 안전
+        );
+      });
+
+      return true;
+    } else if (!isCurrentlyLiked) {
+      //좋아요 안되어있는 경우(좋아요 등록)
+      const likeUp = 1;
+      await this.updateLikeHandleTransaction(
+        wherePostLike,
+        post,
+        () => "CURRENT_TIMESTAMP(0)",
+        likeUp,
+      );
+
+      return true;
+    } else {
+      //좋아요 되어있는 경우(좋아요 해지)
+      const likeDown = -1;
+      await this.updateLikeHandleTransaction(
+        wherePostLike,
+        post,
+        null,
+        likeDown,
+      );
+
+      return false;
+    }
   }
 
   /**
@@ -293,5 +356,24 @@ export class PostService {
     const isAdmin = user.userType === "ADMIN";
     const isOwner = user.userUuid === postUserUuid;
     if (!isAdmin && !isOwner) throw new BadRequestException("not equal user");
+  }
+
+  private async updateLikeHandleTransaction(
+    wherePostLike: { userId: number; postId: number },
+    post: PostEntity,
+    actionDtHandler: (() => string) | null,
+    likeCounter: 1 | -1,
+  ): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      await manager.update(PostLikeEntity, wherePostLike, {
+        actionDt: actionDtHandler,
+      });
+
+      await manager.update(
+        PostEntity,
+        { id: post.id },
+        { likes: () => (likeCounter > 0 ? "likes + 1" : "likes - 1") },
+      );
+    });
   }
 }
