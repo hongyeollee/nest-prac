@@ -3,6 +3,7 @@ import {
   ConflictException,
   HttpStatus,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   UnprocessableEntityException,
 } from "@nestjs/common";
@@ -54,12 +55,20 @@ export class UserService {
    * @returns
    */
   async getUser(getUserDto: GetUserDTO): Promise<UserEntity> {
-    const userInfo = await this.userRepository.findOne({
-      where: {
-        email: getUserDto.email,
-        deletedDt: IsNull(),
-      },
-    });
+    const { email, userUuid, name } = getUserDto;
+    const where: any = { deletedDt: IsNull() };
+
+    if (!email && !userUuid) {
+      throw new NotAcceptableException(
+        "at least one of parameter email, userUuid, name requires",
+      );
+    }
+
+    if (email) where.email = email;
+    if (userUuid) where.userUuid = userUuid;
+    if (name) where.name = name;
+
+    const userInfo = await this.userRepository.findOne({ where });
 
     if (!userInfo) {
       throw new NotFoundException("Not exist user");

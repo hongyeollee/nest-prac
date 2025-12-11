@@ -16,6 +16,7 @@ import { CouponIssuedEntity } from "entities/coupons/coupon-issued.entity";
 import { CouponIssuedLogEntity } from "entities/coupons/coupon-issued-log.entity";
 import { CommonModule } from "./_common/common.module";
 import { CouponModule } from "./coupon/coupon.module";
+import { PostLikeEntity } from "entities/post-like.entity";
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CouponModule } from "./coupon/coupon.module";
         CouponEntity,
         CouponIssuedEntity,
         CouponIssuedLogEntity,
+        PostLikeEntity,
       ],
       synchronize: process.env.NODE_ENV === "production" ? false : false, // 개발초기에는 true로 사용해도 도지만, 마이그레이션을 쓰기 시작하면 false로 전환하여 사용해야함.
       /*

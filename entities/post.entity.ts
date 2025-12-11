@@ -1,11 +1,15 @@
 import {
   Column,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from "typeorm";
 import { UserEntity } from "./user.entity";
+import { Exclude } from "class-transformer";
 
 @Entity("post")
 export class PostEntity {
@@ -15,6 +19,7 @@ export class PostEntity {
   })
   id: number;
 
+  @Exclude()
   @Column("varchar", {
     name: "userUuid",
     nullable: true,
@@ -36,7 +41,26 @@ export class PostEntity {
   })
   content: string;
 
-  @Column("datetime", {
+  @Column("int", {
+    unsigned: true,
+    name: "hits",
+    nullable: false,
+    default: 0,
+    comment: "조회수",
+  })
+  hits: number = 0;
+
+  @Column("int", {
+    unsigned: true,
+    name: "likes",
+    nullable: true,
+    default: 0,
+    comment: "게시글 좋아요 수",
+  })
+  likes: number = 0;
+
+  @CreateDateColumn({
+    type: "datetime",
     precision: 0,
     name: "createdDt",
     default: () => "CURRENT_TIMESTAMP(0)",
@@ -44,7 +68,8 @@ export class PostEntity {
   })
   createdDt: Date;
 
-  @Column("datetime", {
+  @UpdateDateColumn({
+    type: "datetime",
     precision: 0,
     name: "updatedDt",
     default: () => "CURRENT_TIMESTAMP(0)",
@@ -54,10 +79,11 @@ export class PostEntity {
   })
   updatedDt: Date | null;
 
-  @Column("datetime", {
+  @DeleteDateColumn({
+    type: "datetime",
     precision: 0,
     name: "deletedDt",
-    default: () => "CURRENT_TIMESTAMP",
+    default: null,
     nullable: true,
     comment: "게시글 데이터 삭제일",
   })
