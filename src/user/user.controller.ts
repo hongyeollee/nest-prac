@@ -65,6 +65,7 @@ export class UserController {
   @Get()
   // @ApiBearerAuth() 토zms 인증 필요
   @ApiOperation({
+    summary: "회원 상세 조회",
     description: `
       email, userUuid, name 중 하나 이상을 기준으로 유저를 조회합니다.
       - 예시1: /api/user?email=test@test.com
