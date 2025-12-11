@@ -22,13 +22,6 @@ export class PostService {
 
     private dataSource: DataSource,
 
-    /**
-     * userRepository는 user서비스에서 getUser메소드 로직 개선되면 삭제
-     * 삭제된 userRepository 관련 부분은 userService에서 의존받아 사용할 수 있도록 처리
-     */
-    @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>,
-
     @InjectRepository(PostLikeEntity)
     private postLikeRepository: Repository<PostLikeEntity>,
   ) {}
@@ -67,7 +60,7 @@ export class PostService {
   }> {
     let userUuid: string | undefined;
     if (name) {
-      const userInfo = await this.getUserInfoByName(name);
+      const userInfo = await this.userService.getUser({ name });
       if (!userInfo) throw new NotFoundException("not exist user");
       userUuid = userInfo.userUuid;
     }
@@ -341,16 +334,6 @@ export class PostService {
   }
 
   //여러개의 값을 한번에 불러올때 promise.all을 사용해서 성능을 효율화 하는 방법 테스트 시도
-
-  /**
-   * 임시 메소드. userRepository 관련 처리되면 메소드 삭제하고
-   * userService에서 의존받아서 사용할 수 있도록 처리.
-   */
-  private async getUserInfoByName(name: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({
-      where: { name, deletedDt: IsNull() },
-    });
-  }
 
   private assertOwnership(user: Payload, postUserUuid: string): void {
     const isAdmin = user.userType === "ADMIN";
