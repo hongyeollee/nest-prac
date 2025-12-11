@@ -15,6 +15,7 @@ import { Exclude } from "class-transformer";
 export class PostEntity {
   @PrimaryGeneratedColumn({
     name: "id",
+    unsigned: true,
     comment: "게시판의 고유 번호",
   })
   id: number;
