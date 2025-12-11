@@ -24,7 +24,6 @@ export class PostLikeEntity {
     type: "int",
     unsigned: true,
     name: "userId",
-    unique: true,
     nullable: false,
     comment: "user의 id",
   })
@@ -34,7 +33,6 @@ export class PostLikeEntity {
     type: "int",
     unsigned: true,
     name: "postId",
-    unique: true,
     nullable: false,
     comment: "post의 id",
   })
@@ -45,6 +43,7 @@ export class PostLikeEntity {
     name: "createdDt",
     comment: "생성일",
     precision: 0,
+    default: () => "CURRENT_TIMESTAMP(0)",
     nullable: false,
   })
   createdDt: Date;
