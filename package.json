@@ -19,15 +19,16 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "typeorm:prod": "node ./node_modules/typeorm/cli.js",
     "migration:generate:local": "NODE_ENV=local npm run typeorm -- migration:generate -d src/_config/data-source.ts",
     "migration:generate:dev": "NODE_ENV=development npm run typeorm -- migration:generate -d src/_config/data-source.ts",
-    "migration:generate:prod": "NODE_ENV=production npm run typeorm -- migration:generate -d src/_config/data-source.ts",
+    "migration:generate:prod": "NODE_ENV=production npm run typeorm:prod -- migration:generate -d src/_config/data-source.ts",
     "migration:run:local": "NODE_ENV=local npm run typeorm -- migration:run -d src/_config/data-source.ts",
     "migration:run:dev": "NODE_ENV=development npm run typeorm -- migration:run -d src/_config/data-source.ts",
-    "migration:run:prod": "NODE_ENV=production npm run typeorm -- migration:run -d src/_config/data-source.ts",
+    "migration:run:prod": "NODE_ENV=production npm run typeorm:prod -- migration:run -d src/_config/data-source.ts",
     "migration:revert:local": "NODE_ENV=local npm run typeorm -- migration:revert -d src/_config/data-source.ts",
     "migration:revert:dev": "NODE_ENV=development npm run typeorm -- migration:revert -d src/_config/data-source.ts",
-    "migration:revert:prod": "NODE_ENV=production npm run typeorm -- migration:revert -d src/_config/data-source.ts"
+    "migration:revert:prod": "NODE_ENV=production npm run typeorm:prod -- migration:revert -d src/_config/data-source.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.848.0",
