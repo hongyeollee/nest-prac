@@ -18,11 +18,11 @@ import {
   ApiBody,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNotAcceptableResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
@@ -65,15 +65,12 @@ export class UserController {
   @Get()
   // @ApiBearerAuth() 토zms 인증 필요
   @ApiOperation({
-    summary: "회원 조회",
-    description: "회원의 정보를 조회합니다.",
-  })
-  @ApiQuery({
-    name: "email",
-    type: String,
-    example: "abc@def.com",
-    required: true,
-    description: "회원의 이메일",
+    description: `
+      email, userUuid, name 중 하나 이상을 기준으로 유저를 조회합니다.
+      - 예시1: /api/user?email=test@test.com
+      - 예시2: /api/user?userUuid=...
+      - 예시3: /api/user?name=...
+    `,
   })
   @ApiBadRequestResponse({
     description: "잘못된 이메일 형식 입력시",
@@ -83,6 +80,20 @@ export class UserController {
           message: ["email must be an email"],
           error: "Bad Request",
           statusCode: HttpStatus.BAD_REQUEST,
+        },
+      },
+    },
+  })
+  @ApiNotAcceptableResponse({
+    description: "검색조건 파라미터가 없는경우",
+    content: {
+      "application/json": {
+        example: {
+          statusCode: 406,
+          statusText: "NOTACCEPTABLE",
+          message: "at least one of parameter email, userUuid, name requires",
+          timestamp: "2025-12-08T05:52:00.607Z",
+          path: "/api/user?email=test@test.com",
         },
       },
     },
