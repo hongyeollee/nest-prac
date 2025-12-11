@@ -6,6 +6,7 @@ import { PostEntity } from "../../entities/post.entity";
 import { CouponEntity } from "../../entities/coupons/coupon.entity";
 import { CouponIssuedEntity } from "../../entities/coupons/coupon-issued.entity";
 import { CouponIssuedLogEntity } from "../../entities/coupons/coupon-issued-log.entity";
+import { PostLikeEntity } from "entities/post-like.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -23,6 +24,7 @@ export const AppDataSource = new DataSource({
     CouponEntity,
     CouponIssuedEntity,
     CouponIssuedLogEntity,
+    PostLikeEntity,
   ],
   migrationsRun: false,
   migrations:
