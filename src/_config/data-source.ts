@@ -29,6 +29,6 @@ export const AppDataSource = new DataSource({
   migrationsRun: false,
   migrations:
     process.env.NODE_ENV === "production"
-      ? ["dist/_migrations/*.js"]
+      ? ["dist/src/_migrations/*.js"]
       : ["src/_migrations/*.ts"],
 });
