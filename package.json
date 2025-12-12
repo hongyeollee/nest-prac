@@ -25,7 +25,7 @@
     "migration:generate:prod": "NODE_ENV=production npm run typeorm:prod -- migration:generate -d src/_config/data-source.ts",
     "migration:run:local": "NODE_ENV=local npm run typeorm -- migration:run -d src/_config/data-source.ts",
     "migration:run:dev": "NODE_ENV=development npm run typeorm -- migration:run -d src/_config/data-source.ts",
-    "migration:run:prod": "NODE_ENV=production npm run typeorm:prod -- migration:run -d dist/_config/data-source.ts",
+    "migration:run:prod": "NODE_ENV=production npm run typeorm:prod -- migration:run -d dist/_config/data-source.js",
     "migration:revert:local": "NODE_ENV=local npm run typeorm -- migration:revert -d src/_config/data-source.ts",
     "migration:revert:dev": "NODE_ENV=development npm run typeorm -- migration:revert -d src/_config/data-source.ts",
     "migration:revert:prod": "NODE_ENV=production npm run typeorm:prod -- migration:revert -d src/_config/data-source.ts"
