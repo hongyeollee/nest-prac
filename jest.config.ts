@@ -3,7 +3,7 @@ import type { Config } from "jest";
 
 const config: Config = {
   moduleFileExtensions: ["js", "json", "ts"],
-  rootDir: "src",
+  rootDir: ".",
   testRegex: ".*\\.spec\\.ts$",
   transform: {
     "^.+\\.(t|j)s$": "ts-jest",
@@ -12,7 +12,8 @@ const config: Config = {
   coverageDirectory: "../coverage",
   testEnvironment: "node",
   moduleNameMapper: {
-    "^entities/(.*)$": "<rootDir>/../entities/$1",
+    "^src/(.*)$": "<rootDir>/src/$1",
+    "^entities/(.*)$": "<rootDir>/entities/$1",
   },
 };
 
