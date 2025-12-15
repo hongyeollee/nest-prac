@@ -17,6 +17,7 @@ import { CouponIssuedLogEntity } from "entities/coupons/coupon-issued-log.entity
 import { CommonModule } from "./_common/common.module";
 import { CouponModule } from "./coupon/coupon.module";
 import { PostLikeEntity } from "entities/post-like.entity";
+import { isProduction } from "./_config/config";
 
 @Module({
   imports: [
@@ -56,7 +57,7 @@ import { PostLikeEntity } from "entities/post-like.entity";
        * 해당 영역에서는 NestJS의 애플리케이션 작동만 신경쓰는 영역이기때문에 migration에 대한 정보가 필요없음. /_config/data-source.ts에서 migration cli에 대한 정보 담당.
        */
       timezone: "Z",
-      logging: true, //개발환경에서 유용하게 활용함.
+      logging: !isProduction(), // 운영환경에서만 logging false, 그 외의 환경에서는 true
       // logging: ['error', 'warn'] //운영 환경에서는 에러위주, 추가적으로 하면 경고까지도 하는 경우가 일반적인것 같음(chat GPT 내용 확인)
 
       /**
