@@ -7,7 +7,7 @@ import {
 } from "typeorm";
 import { ChatRoomMemberEntity } from "./chat-room-member.entity";
 import { ChatMessageEntity } from "./chat-message.entity";
-import { ChatTypeEnum } from "./chat-type.enum";
+import { ChatTypeEnum } from "../../src/chat/enum/chat-type.enum";
 
 @Entity("chat_room")
 export class ChatRoomEntity {

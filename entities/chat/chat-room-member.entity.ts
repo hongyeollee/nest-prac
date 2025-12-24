@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
-import { ChatRoleEnum } from "./chat-role.enum";
+import { ChatRoleEnum } from "../../src/chat/enum/chat-role.enum";
 import { ChatRoomEntity } from "./chat-room.entity";
 
 @Entity("chat_room_member")
