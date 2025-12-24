@@ -50,9 +50,10 @@ export class ChatMessageEntity {
   @CreateDateColumn({
     name: "createdDt",
     type: "datetime",
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
     nullable: false,
     comment: "채팅 메시지 생성 시간",
+    precision: 0,
   })
   createdDt: Date;
 

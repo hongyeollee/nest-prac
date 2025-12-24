@@ -49,7 +49,7 @@ export class ChatRoomEntity {
     name: "createdDt",
     type: "datetime",
     nullable: false,
-    default: "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
     precision: 0,
     comment: "채팅 생성 시간",
   })

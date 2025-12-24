@@ -45,7 +45,7 @@ export class ChatMessageReadEntity {
     type: "datetime",
     precision: 0,
     comment: "읽은 시간",
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
     nullable: false,
   })
   readDt: Date;

@@ -74,7 +74,7 @@ export class ChatRoomMemberEntity {
     name: "joinedDt",
     type: "datetime",
     nullable: false,
-    default: () => "CURRENT_TIMESTAMP",
+    default: () => "CURRENT_TIMESTAMP(0)",
     precision: 0,
     comment: "채팅 참여 일시",
   })
