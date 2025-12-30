@@ -34,6 +34,14 @@ export class ChatRoomMemberEntity {
   roomId: number;
 
   @Column({
+    name: "displayName",
+    type: "varchar",
+    nullable: true,
+    comment: "사용자별 커스텀 방 제목",
+  })
+  displayName: string | null;
+
+  @Column({
     name: "userUuid",
     type: "varchar",
     nullable: false,
@@ -65,10 +73,31 @@ export class ChatRoomMemberEntity {
     name: "historyReadableDt",
     type: "datetime",
     nullable: true,
+    default: null,
     precision: 0,
     comment: "과거 채팅 읽기 가능 여부 기준 시간",
   })
   historyReadableDt: Date | null;
+
+  @Column({
+    name: "lastReadMessageId",
+    type: "int",
+    unsigned: true,
+    default: null,
+    nullable: true,
+    comment: "마지막에 읽은 메시지 id",
+  })
+  lastReadMessageId: number | null;
+
+  @Column({
+    name: "lastReadDt",
+    type: "datetime",
+    nullable: true,
+    default: null,
+    precision: 0,
+    comment: "메시지 마지막 읽은 시점",
+  })
+  lastReadDt: Date | null;
 
   @CreateDateColumn({
     name: "joinedDt",
@@ -84,6 +113,7 @@ export class ChatRoomMemberEntity {
     name: "leftDt",
     type: "datetime",
     nullable: true,
+    default: null,
     precision: 0,
     comment: "채팅 나감 일시",
   })
