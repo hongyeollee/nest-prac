@@ -20,6 +20,6 @@ import { EmailModule } from "src/mail/mail.module";
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, AuthUtil],
-  exports: [],
+  exports: [JwtModule],
 })
 export class AuthMoudule {}
