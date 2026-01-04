@@ -7,6 +7,10 @@ import { CouponEntity } from "../../entities/coupons/coupon.entity";
 import { CouponIssuedEntity } from "../../entities/coupons/coupon-issued.entity";
 import { CouponIssuedLogEntity } from "../../entities/coupons/coupon-issued-log.entity";
 import { PostLikeEntity } from "entities/post-like.entity";
+import { ChatRoomEntity } from "entities/chat/chat-room.entity";
+import { ChatRoomMemberEntity } from "entities/chat/chat-room-member.entity";
+import { ChatMessageEntity } from "entities/chat/chat-message.entity";
+import { ChatMessageReadEntity } from "entities/chat/chat-message-read.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -25,6 +29,10 @@ export const AppDataSource = new DataSource({
     CouponIssuedEntity,
     CouponIssuedLogEntity,
     PostLikeEntity,
+    ChatRoomEntity,
+    ChatRoomMemberEntity,
+    ChatMessageEntity,
+    ChatMessageReadEntity,
   ],
   migrationsRun: false,
   migrations:

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채팅 WebSocket 테스트</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .message {
+            padding: 5px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .server-message {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        .error-message {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .config-section {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 채팅 WebSocket 테스트</h1>
+
+        <div id="status" class="status disconnected">
+            연결 안됨
+        </div>
+
+        <div class="config-section">
+            <h3>⚙️ 연결 설정</h3>
+            <div class="input-group">
+                <label>서버 포트:</label>
+                <input type="number" id="port" placeholder="3001" value="3001">
+            </div>
+            <div class="input-group">
+                <label>JWT 토큰:</label>
+                <input type="text" id="token" placeholder="여기에 JWT 토큰을 입력하세요">
+            </div>
+        </div>
+
+        <button id="connectBtn" onclick="connect()">연결</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>연결 해제</button>
+
+        <hr>
+
+        <h3>방 입장/퇴장</h3>
+        <div class="input-group">
+            <label>방 ID:</label>
+            <input type="number" id="roomId" placeholder="1" value="1">
+        </div>
+        <button onclick="joinRoom()">방 입장</button>
+        <button onclick="leaveRoom()">방 퇴장</button>
+
+        <hr>
+
+        <h3>메시지 전송</h3>
+        <div class="input-group">
+            <label>메시지:</label>
+            <textarea id="message" rows="3" placeholder="메시지를 입력하세요"></textarea>
+        </div>
+        <button onclick="sendMessage()">메시지 전송</button>
+
+        <hr>
+
+        <h3>타이핑 상태</h3>
+        <button onclick="startTyping()">타이핑 시작</button>
+        <button onclick="stopTyping()">타이핑 중지</button>
+
+        <hr>
+
+        <h3>📨 수신 메시지</h3>
+        <button onclick="clearMessages()" style="background-color: #ff9800; margin-bottom: 10px;">메시지 지우기</button>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let socket = null;
+
+        function connect() {
+            const token = document.getElementById('token').value;
+            const port = document.getElementById('port').value;
+
+            if (!token) {
+                alert('JWT 토큰을 입력하세요');
+                return;
+            }
+
+            if (!port) {
+                alert('포트 번호를 입력하세요');
+                return;
+            }
+
+            addMessage(`🔌 서버 연결 시도 중... (http://localhost:${port}/chat)`, 'server-message');
+
+            socket = io(`http://localhost:${port}/chat`, {
+                auth: {
+                    token: token
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                addMessage('✅ 서버에 연결되었습니다', 'server-message');
+                updateStatus(true);
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+            });
+
+            socket.on('connect_error', (error) => {
+                addMessage(`❌ 연결 오류: ${error.message}`, 'error-message');
+                addMessage('💡 서버가 실행 중인지, 포트 번호가 올바른지 확인하세요', 'error-message');
+                updateStatus(false);
+            });
+
+            socket.on('disconnect', () => {
+                addMessage('❌ 서버 연결이 끊어졌습니다', 'error-message');
+                updateStatus(false);
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+            });
+
+            socket.on('joinedRoom', (data) => {
+                addMessage(`🚪 방 ${data.roomId}에 입장했습니다`, 'server-message');
+            });
+
+            socket.on('leftRoom', (data) => {
+                addMessage(`🚪 방 ${data.roomId}에서 퇴장했습니다`, 'server-message');
+            });
+
+            socket.on('messageCreated', (data) => {
+                addMessage(`💬 새 메시지: "${data.content}" (발신자: ${data.senderUserUuid})`, 'server-message');
+            });
+
+            socket.on('typing', (data) => {
+                const status = data.isTyping ? '입력 중...' : '입력 중지';
+                addMessage(`⌨️ ${data.userUuid}님이 ${status}`, 'server-message');
+            });
+
+            socket.on('readUpdated', (data) => {
+                addMessage(`✅ ${data.userUuid}님이 메시지 ${data.messageId}까지 읽음`, 'server-message');
+            });
+
+            socket.on('error', (error) => {
+                addMessage(`❌ 에러: ${JSON.stringify(error)}`, 'error-message');
+            });
+
+            socket.on('exception', (error) => {
+                addMessage(`❌ 예외 발생: ${JSON.stringify(error)}`, 'error-message');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                updateStatus(false);
+            }
+        }
+
+        function joinRoom() {
+            if (!socket) {
+                alert('먼저 서버에 연결하세요');
+                return;
+            }
+            const roomId = parseInt(document.getElementById('roomId').value);
+            addMessage(`📤 방 ${roomId} 입장 요청...`, 'server-message');
+            socket.emit('joinOrLeftRoom', { roomId, action: 'join' }, (response) => {
+                addMessage(`📥 응답: ${response}`, 'server-message');
+            });
+        }
+
+        function leaveRoom() {
+            if (!socket) {
+                alert('먼저 서버에 연결하세요');
+                return;
+            }
+            const roomId = parseInt(document.getElementById('roomId').value);
+            addMessage(`📤 방 ${roomId} 퇴장 요청...`, 'server-message');
+            socket.emit('joinOrLeftRoom', { roomId, action: 'leave' }, (response) => {
+                addMessage(`📥 응답: ${response}`, 'server-message');
+            });
+        }
+
+        function sendMessage() {
+            if (!socket) {
+                alert('먼저 서버에 연결하세요');
+                return;
+            }
+            const roomId = parseInt(document.getElementById('roomId').value);
+            const content = document.getElementById('message').value;
+
+            if (!content) {
+                alert('메시지를 입력하세요');
+                return;
+            }
+
+            addMessage(`📤 메시지 전송: "${content}"`, 'server-message');
+            socket.emit('sendMessage', { roomId, content }, (response) => {
+                addMessage(`📥 전송 완료: ${JSON.stringify(response)}`, 'server-message');
+                document.getElementById('message').value = '';
+            });
+        }
+
+        function startTyping() {
+            if (!socket) {
+                alert('먼저 서버에 연결하세요');
+                return;
+            }
+            const roomId = parseInt(document.getElementById('roomId').value);
+            socket.emit('typing', { roomId, isTyping: true });
+            addMessage('⌨️ 타이핑 상태 전송: true', 'server-message');
+        }
+
+        function stopTyping() {
+            if (!socket) {
+                alert('먼저 서버에 연결하세요');
+                return;
+            }
+            const roomId = parseInt(document.getElementById('roomId').value);
+            socket.emit('typing', { roomId, isTyping: false });
+            addMessage('⌨️ 타이핑 상태 전송: false', 'server-message');
+        }
+
+        function addMessage(text, className = '') {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+            addMessage('🗑️ 메시지가 지워졌습니다', 'server-message');
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '✅ 연결됨';
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '❌ 연결 안됨';
+            }
+        }
+
+        // 페이지 로드 시 안내 메시지
+        window.onload = function() {
+            addMessage('👋 WebSocket 테스트 페이지에 오신 것을 환영합니다!', 'server-message');
+            addMessage('1️⃣ 먼저 Swagger에서 로그인하여 JWT 토큰을 받으세요', 'server-message');
+            addMessage('2️⃣ 서버 포트와 JWT 토큰을 입력하고 "연결" 버튼을 클릭하세요', 'server-message');
+            addMessage('3️⃣ 채팅방을 생성하고 방 ID를 입력한 후 "방 입장"을 클릭하세요', 'server-message');
+        };
+    </script>
+</body>
+</html>

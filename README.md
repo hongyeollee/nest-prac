@@ -61,6 +61,35 @@ A comprehensive NestJS-based REST API server demonstrating production-ready patt
 - 쿠폰 목록을 위한 TTL 기반 캐싱
 - Docker 및 로컬 환경 지원
 
+#### **실시간 채팅 시스템 (Real-time Chat System)**
+
+- **WebSocket 기반 실시간 통신**
+
+  - Socket.IO를 통한 양방향 통신
+  - JWT 기반 WebSocket 인증
+  - 자동 재연결 및 폴링 폴백
+
+- **채팅방 관리**
+
+  - 1:1 DM 및 그룹 채팅 지원
+  - 채팅방 생성, 조회, 초대, 퇴장
+  - 과거 채팅 이력 열람 권한 제어
+  - 읽지 않은 메시지 카운트
+
+- **메시지 기능**
+
+  - 실시간 메시지 송수신
+  - 메시지 히스토리 조회 (페이지네이션)
+  - 타이핑 인디케이터
+  - 읽음 상태 추적 및 동기화
+
+- **WebSocket 이벤트**
+  - `joinOrLeftRoom` - 방 입장/퇴장
+  - `sendMessage` - 메시지 전송
+  - `typing` - 타이핑 상태 전송
+  - `messageCreated` - 새 메시지 수신
+  - `readUpdated` - 읽음 상태 업데이트
+
 ## Tech Stack / 기술 스택
 
 ### Core Framework / 핵심 프레임워크
@@ -85,6 +114,12 @@ A comprehensive NestJS-based REST API server demonstrating production-ready patt
 
 - **AWS S3** - 파일 저장소
 
+### Real-time Communication / 실시간 통신
+
+- **Socket.IO** - WebSocket 기반 실시간 양방향 통신
+- **@nestjs/websockets** - NestJS WebSocket 모듈
+- **@nestjs/platform-socket.io** - Socket.IO 플랫폼 어댑터
+
 ### Validation & Documentation / 검증 & 문서화
 
 - **Class Validator** - DTO 검증
@@ -105,6 +140,11 @@ nest-prac/
 │   │   ├── coupon.entity.ts
 │   │   ├── coupon-issued.entity.ts
 │   │   └── coupon-issued-log.entity.ts
+│   ├── chat/                   # 채팅 관련 엔티티
+│   │   ├── chat-room.entity.ts
+│   │   ├── chat-room-member.entity.ts
+│   │   ├── chat-message.entity.ts
+│   │   └── chat-message-read.entity.ts
 │   ├── user.entity.ts
 │   ├── post.entity.ts
 │   └── post-like.entity.ts
@@ -125,9 +165,17 @@ nest-prac/
 │   ├── post/                  # 게시글 관리
 │   ├── coupon/                # 쿠폰 관리
 │   │   └── coupon-issued/    # 쿠폰 발급 서브 모듈
+│   ├── chat/                  # 실시간 채팅 모듈
+│   │   ├── controller/        # REST API 컨트롤러
+│   │   ├── service/           # 비즈니스 로직
+│   │   ├── websocket/         # WebSocket 게이트웨이
+│   │   ├── dto/              # Data Transfer Objects
+│   │   ├── guards/           # WebSocket JWT 가드
+│   │   └── decorator/        # WebSocket 커스텀 데코레이터
 │   ├── file-upload/           # AWS S3 파일 업로드
 │   ├── mail/                  # 이메일 서비스
 │   └── redis/                 # Redis 캐시 설정
+├── test-websocket.html        # WebSocket 테스트 클라이언트
 └── test/                      # E2E 테스트
 ```
 
@@ -269,6 +317,67 @@ http://localhost/api/docs
 
 - `POST /single` - 단일 파일 업로드
 - `POST /multiple` - 다중 파일 업로드
+
+### Chat Rooms / 채팅방 (`/api/chat-room`)
+
+- `GET /` - 내가 속한 채팅방 목록 조회
+- `POST /` - 새 채팅방 생성 (DM/GROUP)
+- `GET /:roomId` - 채팅방 상세 정보 조회
+- `POST /:roomId/members` - 채팅방에 멤버 초대
+- `DELETE /:roomId/members/me` - 채팅방 퇴장
+
+### Chat Messages / 채팅 메시지 (`/api/chat-message`)
+
+- `GET /:roomId/messages` - 채팅방 메시지 히스토리 조회 (페이지네이션)
+
+### Chat Read Status / 읽음 상태 (`/api/chat-read`)
+
+- `PATCH /mark-read` - 메시지 읽음 처리
+
+## WebSocket Testing / 웹소켓 테스트
+
+프로젝트에는 WebSocket 기능을 테스트할 수 있는 HTML 클라이언트가 포함되어 있습니다.
+
+### 테스트 방법
+
+1. **서버 실행**
+
+   ```bash
+   npm run start:dev
+   ```
+
+2. **JWT 토큰 발급**
+
+   - Swagger 문서 접속: `http://localhost/api/docs`
+   - `/api/auth/login` 엔드포인트로 로그인
+   - Response에서 `accessToken` 복사
+
+3. **WebSocket 클라이언트 열기**
+
+   - 브라우저에서 `test-websocket.html` 파일 열기(애플리케이션 실행 후 전체 경로 브라우저에 입력하여 접속)
+   - 포트 입력 (포트번호는 설정한 포트 기준으로 사용합니다.)
+   - JWT 토큰 입력 후 Connect 버튼 클릭
+
+4. **테스트 시나리오**
+   - **연결 확인**: "Connected to server" 메시지 확인
+   - **채팅방 입장**: Room ID 입력 후 "Join Room" 클릭
+   - **메시지 전송**: 메시지 입력 후 "Send Message" 클릭
+   - **타이핑 인디케이터**: "Start Typing" 버튼으로 타이핑 상태 전송
+   - **실시간 수신**: 다른 브라우저 탭에서 동일한 방에 접속하여 실시간 메시지 수신 확인
+
+### WebSocket 이벤트
+
+**클라이언트 → 서버**
+
+- `joinOrLeftRoom` - 채팅방 입장/퇴장
+- `sendMessage` - 메시지 전송
+- `typing` - 타이핑 상태 전송
+
+**서버 → 클라이언트**
+
+- `messageCreated` - 새 메시지 수신
+- `readUpdated` - 읽음 상태 업데이트
+- `typing` - 다른 사용자의 타이핑 상태 수신
 
 ## Testing / 테스트
 

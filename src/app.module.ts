@@ -18,11 +18,17 @@ import { CommonModule } from "./_common/common.module";
 import { CouponModule } from "./coupon/coupon.module";
 import { PostLikeEntity } from "entities/post-like.entity";
 import { isProduction } from "./_config/config";
+import { ChatRoomEntity } from "entities/chat/chat-room.entity";
+import { ChatRoomMemberEntity } from "entities/chat/chat-room-member.entity";
+import { ChatMessageEntity } from "entities/chat/chat-message.entity";
+import { ChatMessageReadEntity } from "entities/chat/chat-message-read.entity";
+import { ChatModule } from "./chat/chat.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // envFilePath: `.env`,
     }),
     TypeOrmModule.forRoot({
       type: "mysql",
@@ -38,8 +44,13 @@ import { isProduction } from "./_config/config";
         CouponIssuedEntity,
         CouponIssuedLogEntity,
         PostLikeEntity,
+        ChatRoomEntity,
+        ChatRoomMemberEntity,
+        ChatMessageEntity,
+        ChatMessageReadEntity,
       ],
       synchronize: process.env.NODE_ENV === "production" ? false : false, // 개발초기에는 true로 사용해도 도지만, 마이그레이션을 쓰기 시작하면 false로 전환하여 사용해야함.
+      // synchronize: process.env.NODE_ENV === "local" ? true : false, //로컬에서 DB syncronize 사용할 경우 코드 활성화
       /*
        * timezone에서 "Asia/Seoul"의 값은 지원하지 않음
        * 'local': 서버의 로컬시간대
@@ -81,6 +92,7 @@ import { isProduction } from "./_config/config";
     RedisCacheModule,
     CommonModule,
     CouponModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -39,13 +39,18 @@ async function bootstrap() {
   app.use(methodWhiteList);
   app.use(pathBlocker);
 
+  // CORS 설정 (WebSocket 지원)
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   // 전역 프리픽스
   app.setGlobalPrefix("api", {
     exclude: [{ path: "/", method: RequestMethod.GET }],
   });
   // 보안헤더 추가시 헬멧 패키지 추가
   // app.use(helmet());
-  // 차후 필요시 cors 추가
 
   const port = isProduction()
     ? process.env.PROD_PORT
