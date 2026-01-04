@@ -11,10 +11,12 @@ FROM node:22-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit
 
 COPY . .
 RUN npm run build
+
+RUN npm ci --prefer-offline --no-audit --omit=dev
 
 
 # 🚀 2단계: 실행 단계 (최종 이미지)
