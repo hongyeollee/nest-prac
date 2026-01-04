@@ -25,3 +25,4 @@ services:
     volumes:
       - ./nginx/conf.d/production.conf:/etc/nginx/conf.d/server.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./test-websocket.html:/app/test-websocket.html:ro
