@@ -338,6 +338,23 @@ http://localhost/api/docs
 
 프로젝트에는 WebSocket 기능을 테스트할 수 있는 HTML 클라이언트가 포함되어 있습니다.
 
+### 테스트 페이지 접속 방법
+
+**로컬 개발 환경:**
+
+- 브라우저에서 `file:///path/to/test-websocket.html` 직접 열기
+- 또는 프로젝트 폴더에서 `test-websocket.html` 파일 더블클릭
+
+**프로덕션 환경 (배포된 서버):**
+
+- 브라우저에서 `https://your-domain/test-websocket.html` 접속
+- Nginx를 통해 정적 파일로 서빙됨
+
+**Swagger API 문서에서 접근:**
+
+- `http://localhost/api/docs` 또는 `https://your-domain/api/docs` 접속
+- 채팅 관련 API 설명에서 **WebSocket 테스트 페이지 링크** 클릭
+
 ### 테스트 방법
 
 1. **서버 실행**
@@ -352,14 +369,13 @@ http://localhost/api/docs
    - `/api/auth/login` 엔드포인트로 로그인
    - Response에서 `accessToken` 복사
 
-3. **WebSocket 클라이언트 열기**
+3. **WebSocket 연결**
 
-   - 브라우저에서 `test-websocket.html` 파일 열기(애플리케이션 실행 후 전체 경로 브라우저에 입력하여 접속)
-   - 포트 입력 (포트번호는 설정한 포트 기준으로 사용합니다.)
-   - JWT 토큰 입력 후 Connect 버튼 클릭
+   - 테스트 페이지에서 포트 입력 (로컬: 80 또는 설정한 포트, 프로덕션: 443)
+   - JWT 토큰 입력 후 "Connect" 버튼 클릭
+   - "Connected to server" 메시지 확인
 
 4. **테스트 시나리오**
-   - **연결 확인**: "Connected to server" 메시지 확인
    - **채팅방 입장**: Room ID 입력 후 "Join Room" 클릭
    - **메시지 전송**: 메시지 입력 후 "Send Message" 클릭
    - **타이핑 인디케이터**: "Start Typing" 버튼으로 타이핑 상태 전송
