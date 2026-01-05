@@ -21,11 +21,16 @@ type RoomAction = "join" | "leave";
  * @description
  * 실시간 채팅 기능을 제공하는 WebSocket 게이트웨이입니다.
  *
+ * **🧪 WebSocket 테스트 페이지**: `/test-websocket.html`
+ * - 브라우저에서 접속하여 실시간 채팅 기능을 바로 테스트할 수 있습니다
+ * - JWT 토큰으로 인증 후 방 입장, 메시지 송수신, 타이핑 상태 등 모든 기능 테스트 가능
+ *
  * @namespace /chat
+ * @connection wss://your-domain/chat (production) | ws://localhost:3000/chat (development)
  *
  * @authentication
  * JWT 토큰 인증이 필요합니다. 다음 방법 중 하나로 토큰을 전달할 수 있습니다:
- * 1. handshake.auth.token
+ * 1. handshake.auth.token (권장)
  * 2. handshake.headers.authorization (Bearer 형식)
  * 3. handshake.query.token
  *

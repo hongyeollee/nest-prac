@@ -28,18 +28,6 @@ import { JwtAuthGuard } from "src/auth/security/auth.guard";
 @ApiTags("채팅방 관리")
 @ApiBearerAuth("accessToken")
 @Controller("chat-room")
-/**
- * 채팅방 관리 컨트롤러
- *
- * WebSocket 테스트: 프로젝트 루트의 test-websocket.html 파일을 브라우저로 열어
- * 실시간 채팅 기능을 테스트할 수 있습니다.
- *
- * 테스트 순서:
- * 1. /api/auth/login으로 JWT 토큰 발급
- * 2. test-websocket.html에서 토큰으로 WebSocket 연결
- * 3. 이 API로 채팅방 생성 후 roomId 확인
- * 4. test-websocket.html에서 roomId로 입장하여 실시간 메시지 송수신 테스트
- */
 export class ChatRoomController {
   constructor(private readonly chatRoomService: ChatRoomService) {}
 
@@ -49,7 +37,14 @@ export class ChatRoomController {
   @ApiOperation({
     summary: "내 채팅방 목록 조회",
     description:
-      "현재 사용자가 속한 모든 채팅방 목록을 조회합니다. 마지막 메시지와 읽지 않은 메시지 수를 포함합니다.",
+      "현재 사용자가 속한 모든 채팅방 목록을 조회합니다. 마지막 메시지와 읽지 않은 메시지 수를 포함합니다.\n\n" +
+      "**🧪 실시간 채팅 테스트**\n\n" +
+      "[WebSocket 테스트 페이지](/test-websocket.html)에서 실시간 채팅 기능을 테스트할 수 있습니다.\n\n" +
+      "**테스트 순서:**\n" +
+      "1. `/api/auth/login`으로 JWT 토큰 발급\n" +
+      "2. 테스트 페이지에서 토큰으로 WebSocket 연결\n" +
+      "3. 이 API로 채팅방 생성 후 roomId 확인\n" +
+      "4. 테스트 페이지에서 roomId로 방 입장 후 실시간 메시지 송수신 테스트",
   })
   @ApiResponse({
     status: 200,
@@ -104,7 +99,8 @@ export class ChatRoomController {
     summary: "채팅방 생성",
     description:
       "1:1 또는 그룹 채팅방을 생성합니다.\n\n" +
-      "💡 실시간 테스트: 채팅방 생성 후 반환된 roomId를 test-websocket.html에서 사용하여 " +
+      "**💡 실시간 테스트**\n\n" +
+      "채팅방 생성 후 반환된 roomId를 [WebSocket 테스트 페이지](/test-websocket.html)에서 사용하여 " +
       "WebSocket 연결 및 실시간 메시지 송수신을 테스트할 수 있습니다.",
   })
   @ApiResponse({
