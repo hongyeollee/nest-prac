@@ -11,6 +11,10 @@ import { ChatRoomEntity } from "entities/chat/chat-room.entity";
 import { ChatRoomMemberEntity } from "entities/chat/chat-room-member.entity";
 import { ChatMessageEntity } from "entities/chat/chat-message.entity";
 import { ChatMessageReadEntity } from "entities/chat/chat-message-read.entity";
+import { AccountingTransactionEntity } from "entities/accounting/transaction.entity";
+import { AccountingRuleEntity } from "entities/accounting/rule.entity";
+import { AccountingJournalEntryEntity } from "entities/accounting/journal-entry.entity";
+import { AccountingJournalLineEntity } from "entities/accounting/journal-line.entity";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -33,6 +37,10 @@ export const AppDataSource = new DataSource({
     ChatRoomMemberEntity,
     ChatMessageEntity,
     ChatMessageReadEntity,
+    AccountingTransactionEntity,
+    AccountingRuleEntity,
+    AccountingJournalEntryEntity,
+    AccountingJournalLineEntity,
   ],
   migrationsRun: false,
   migrations:
