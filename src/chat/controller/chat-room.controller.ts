@@ -25,7 +25,7 @@ import { InviteRoomDTO } from "../dto/chat-room/invite-room.dto";
 import { MyRoomDTO } from "../dto/chat-room/my-room.dto";
 import { JwtAuthGuard } from "src/auth/security/auth.guard";
 
-@ApiTags("채팅방 관리")
+@ApiTags("채팅")
 @ApiBearerAuth("accessToken")
 @Controller("chat-room")
 export class ChatRoomController {
@@ -35,7 +35,7 @@ export class ChatRoomController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "내 채팅방 목록 조회",
+    summary: "채팅방 관리 - 내 채팅방 목록 조회",
     description:
       "현재 사용자가 속한 모든 채팅방 목록을 조회합니다. 마지막 메시지와 읽지 않은 메시지 수를 포함합니다.\n\n" +
       "**🧪 실시간 채팅 테스트**\n\n" +
@@ -96,7 +96,7 @@ export class ChatRoomController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "채팅방 생성",
+    summary: "채팅방 관리 - 채팅방 생성",
     description:
       "1:1 또는 그룹 채팅방을 생성합니다.\n\n" +
       "**💡 실시간 테스트**\n\n" +
@@ -149,7 +149,7 @@ export class ChatRoomController {
   @Get(":roomId")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "채팅방 상세 조회",
+    summary: "채팅방 관리 - 채팅방 상세 조회",
     description: "특정 채팅방의 상세 정보를 조회합니다.",
   })
   @ApiParam({
@@ -206,7 +206,7 @@ export class ChatRoomController {
   @Post(":roomId/members")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "채팅방 멤버 초대",
+    summary: "채팅방 관리 - 채팅방 멤버 초대",
     description: "기존 채팅방에 새로운 멤버를 초대합니다.",
   })
   @ApiParam({
@@ -280,7 +280,7 @@ export class ChatRoomController {
   @Delete(":roomId/members/me")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "채팅방 나가기",
+    summary: "채팅방 관리 - 채팅방 나가기",
     description: "현재 사용자가 채팅방에서 나갑니다.",
   })
   @ApiParam({

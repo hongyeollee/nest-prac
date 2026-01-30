@@ -20,7 +20,7 @@ import { ChatEventService } from "../service/chat-event.service";
 import { MarkReadDto } from "../dto/chat-read/mark.read.dto";
 import { JwtAuthGuard } from "src/auth/security/auth.guard";
 
-@ApiTags("채팅 메시지 읽음 처리")
+@ApiTags("채팅")
 @ApiBearerAuth("accessToken")
 @Controller("chat-rooms/:roomId/read")
 /**
@@ -40,7 +40,7 @@ export class ChatReadMessageController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "메시지 읽음 처리",
+    summary: "채팅 메시지 읽음 처리 - 메시지 읽음 처리",
     description:
       "특정 메시지를 읽음으로 표시합니다. 해당 메시지 ID 이하의 모든 메시지가 읽은 것으로 처리됩니다.\n\n" +
       "💡 실시간 동기화: 읽음 처리 후 readUpdated 이벤트가 WebSocket을 통해 방의 모든 멤버에게 브로드캐스트되어 " +
