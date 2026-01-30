@@ -22,7 +22,11 @@ export class AccountingController {
   @Post("sync/notion")
   @ApiOperation({
     summary: "노션 거래 동기화",
-    description: "노션 거래 데이터를 시스템으로 동기화합니다.",
+    description: `
+    노션 거래 데이터를 시스템으로 동기화합니다.
+    노션 데이터베이스 활용을 위해서는 노션API 환경변수(통합 API, 노션 데이터베이스 API)가 필요하며, 
+    노션 데이터베이스 폼이 준비되어있어야 합니다.(폼은 직접 연락주세요.)
+    `,
   })
   @ApiOkResponse({
     description: "동기화 결과",
