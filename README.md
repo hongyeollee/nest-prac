@@ -90,6 +90,13 @@ A comprehensive NestJS-based REST API server demonstrating production-ready patt
   - `messageCreated` - 새 메시지 수신
   - `readUpdated` - 읽음 상태 업데이트
 
+#### **회계 자동화 (Accounting Automation)**
+
+- Notion 거래 데이터 동기화
+- 규칙 기반 복식부기 분개 생성 (차변/대변, 부가세 분리)
+- 검토함(Inbox) 조회 및 오류 트래킹
+- 분개장/시산표 엑셀 다운로드
+
 ## Tech Stack / 기술 스택
 
 ### Core Framework / 핵심 프레임워크
@@ -213,6 +220,10 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 USER_EMAIL=your-email@example.com
 EMAIL_PASS=your-email-app-password
 
+# Notion 연동 설정
+NOTION_TOKEN=your-notion-integration-token
+NOTION_DB_ID=your-notion-database-id
+
 # JWT 시크릿 (추가 필요)
 JWT_SECRET=your-jwt-secret-key
 
@@ -333,6 +344,13 @@ http://localhost/api/docs
 ### Chat Read Status / 읽음 상태 (`/api/chat-read`)
 
 - `PATCH /mark-read` - 메시지 읽음 처리
+
+### Accounting Automation / 회계 자동화 (`/api/account`)
+
+- `POST /account/sync/notion` - 노션 거래 동기화
+- `POST /account/journal/generate` - 분개 생성
+- `GET /account/inbox` - 검토 필요 거래 조회
+- `GET /account/export/excel` - 분개장/시산표 엑셀 다운로드
 
 ## WebSocket Testing / 웹소켓 테스트
 
