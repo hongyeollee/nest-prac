@@ -23,6 +23,11 @@ import { ChatRoomMemberEntity } from "entities/chat/chat-room-member.entity";
 import { ChatMessageEntity } from "entities/chat/chat-message.entity";
 import { ChatMessageReadEntity } from "entities/chat/chat-message-read.entity";
 import { ChatModule } from "./chat/chat.module";
+import { AccountingModule } from "./accounting/accounting.module";
+import { AccountingTransactionEntity } from "entities/accounting/transaction.entity";
+import { AccountingRuleEntity } from "entities/accounting/rule.entity";
+import { AccountingJournalEntryEntity } from "entities/accounting/journal-entry.entity";
+import { AccountingJournalLineEntity } from "entities/accounting/journal-line.entity";
 
 @Module({
   imports: [
@@ -48,6 +53,10 @@ import { ChatModule } from "./chat/chat.module";
         ChatRoomMemberEntity,
         ChatMessageEntity,
         ChatMessageReadEntity,
+        AccountingTransactionEntity,
+        AccountingRuleEntity,
+        AccountingJournalEntryEntity,
+        AccountingJournalLineEntity,
       ],
       synchronize: process.env.NODE_ENV === "production" ? false : false, // 개발초기에는 true로 사용해도 도지만, 마이그레이션을 쓰기 시작하면 false로 전환하여 사용해야함.
       // synchronize: process.env.NODE_ENV === "local" ? true : false, //로컬에서 DB syncronize 사용할 경우 코드 활성화
@@ -93,6 +102,7 @@ import { ChatModule } from "./chat/chat.module";
     CommonModule,
     CouponModule,
     ChatModule,
+    AccountingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
