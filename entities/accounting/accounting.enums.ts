@@ -13,6 +13,8 @@ export enum AccountingTransactionStatus {
   Ready = "READY",
   Review = "REVIEW",
   Processed = "PROCESSED",
+  Corrected = "CORRECTED",
+  Cancelled = "CANCELLED",
 }
 
 export enum AccountingVatMode {

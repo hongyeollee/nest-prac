@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -11,6 +12,9 @@ import {
 } from "./accounting.enums";
 
 @Entity("accounting_rule")
+@Index("uniq_accounting_rule_type_category", ["type", "category"], {
+  unique: true,
+})
 export class AccountingRuleEntity {
   @PrimaryGeneratedColumn("increment", {
     name: "id",

@@ -84,4 +84,36 @@ export class NotionTransactionDto {
     example: "12월 구독료",
   })
   memo?: string;
+
+  @IsOptional()
+  @IsDateString()
+  @ApiPropertyOptional({
+    description: "노션 최종 수정일",
+    example: "2026-01-30T12:00:00.000Z",
+  })
+  notionLastEditedAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiPropertyOptional({
+    description: "노션 아카이브 여부",
+    example: false,
+  })
+  notionArchived?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    description: "정정 사유",
+    example: "금액 입력 오류",
+  })
+  correctionReason?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    description: "취소 사유",
+    example: "거래 취소",
+  })
+  cancellationReason?: string;
 }
