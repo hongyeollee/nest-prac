@@ -76,7 +76,7 @@ export class CouponIssuedService {
 
         // 중복이면 영향 0 (에러로그 없이 예외처리)
         if ((couponIssue?.affectedRows ?? 0) === 0) {
-          await this.dataSource.manager.insert(CouponIssuedLogEntity, {
+          await manager.insert(CouponIssuedLogEntity, {
             userId: user.id,
             couponId: coupon.id,
             action: "already",
@@ -115,10 +115,16 @@ export class CouponIssuedService {
     });
   }
 
+  /**
+   * 선착순 쿠폰 발행
+   * @param createLimitCouponIssueByUser
+   * @param user
+   * @returns
+   */
   async createLimitCouponIssueByUser(
     createLimitCouponIssueByUser: CreateLimitCouponIssueByUserDTO,
     user: Payload,
-  ) {
+  ): Promise<ResponseCommonSuccessDTO> {
     const { couponId } = createLimitCouponIssueByUser;
 
     if (!user) throw new NotFoundException("not existed user");
@@ -140,6 +146,24 @@ export class CouponIssuedService {
 
     const expiredDt = coupon.isPeriodLimited ? coupon.endedDt : null;
 
+    try {
+      return await this.runLimitedCouponIssueTransaction(
+        user,
+        coupon,
+        expiredDt,
+      );
+    } catch (error) {
+      await this.logSoldOutIfNeeded(error, user.id, coupon.id);
+
+      throw error;
+    }
+  }
+
+  private async runLimitedCouponIssueTransaction(
+    user: Payload,
+    coupon: CouponEntity,
+    expiredDt: Date | null,
+  ): Promise<ResponseCommonSuccessDTO> {
     return await this.dataSource.transaction(
       "READ COMMITTED",
       async (manager) => {
@@ -152,7 +176,7 @@ export class CouponIssuedService {
 
           // 중복이면 영향 0 (에러로그 없이 예외처리)
           if ((couponIssue?.affectedRows ?? 0) === 0) {
-            await this.dataSource.manager.insert(CouponIssuedLogEntity, {
+            await manager.insert(CouponIssuedLogEntity, {
               userId: user.id,
               couponId: coupon.id,
               action: "already",
@@ -169,7 +193,7 @@ export class CouponIssuedService {
             .andWhere("issuedCount < totalCount")
             .execute();
 
-          // 품절 → 보상 삭제 + 로그(outside tx) + 400
+          // 품절 → 보상 삭제 + 400 (실패 로그는 트랜잭션 밖에서 기록)
           if (updateRes.affected !== 1) {
             await manager
               .createQueryBuilder()
@@ -180,11 +204,6 @@ export class CouponIssuedService {
                 couponId: coupon.id,
               })
               .execute();
-            await this.dataSource.manager.insert(CouponIssuedLogEntity, {
-              userId: user.id,
-              couponId: coupon.id,
-              action: "soldout",
-            });
             throw new BadRequestException("sold out");
           }
 
@@ -200,18 +219,6 @@ export class CouponIssuedService {
           };
         } catch (error) {
           if (
-            error instanceof BadRequestException &&
-            error.message === "sold out"
-          ) {
-            await this.dataSource.manager.insert(CouponIssuedLogEntity, {
-              userId: user.id,
-              couponId: coupon.id,
-              action: "soldout",
-            });
-            throw error;
-          }
-
-          if (
             error instanceof BadRequestException ||
             error instanceof NotFoundException ||
             error instanceof ConflictException
@@ -222,6 +229,24 @@ export class CouponIssuedService {
         }
       },
     );
+  }
+
+  private isSoldOutError(error: unknown): boolean {
+    return error instanceof BadRequestException && error.message === "sold out";
+  }
+
+  private async logSoldOutIfNeeded(
+    error: unknown,
+    userId: number,
+    couponId: number,
+  ): Promise<void> {
+    if (!this.isSoldOutError(error)) return;
+
+    await this.dataSource.manager.insert(CouponIssuedLogEntity, {
+      userId,
+      couponId,
+      action: "soldout",
+    });
   }
 
   async getMyCoupons(user: Payload, page: number = 1, limit: number = 10) {
