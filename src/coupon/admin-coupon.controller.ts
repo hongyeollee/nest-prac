@@ -30,7 +30,8 @@ import {
   ResponseCreateCouponDataDTO,
   ResponseSuccessCreateCoupon,
 } from "./_dto/response-success-create-coupon.dto";
-import { User } from "src/auth/user.decorator";
+// import { User } from "src/auth/user.decorator";
+import { User } from "src/auth/decorator/user.decorator";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { instanceToPlain } from "class-transformer";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
