@@ -105,10 +105,14 @@ export class AuthService {
     const payloadRefreshToken = this.verifyRefreshToken(refreshToken);
 
     const user = await this.userService.getUser({
-      email: payloadRefreshToken.email,
+      userUuid: payloadRefreshToken.userUuid,
     });
 
-    if (!user) throw new UnauthorizedException();
+    const redisRefreshToken = await this.authUtil.getRefreshTokenByRedis(
+      user.userUuid,
+    );
+    if (!redisRefreshToken || redisRefreshToken !== refreshToken)
+      throw new UnauthorizedException();
 
     const payload: Payload = {
       id: user.id,
@@ -139,11 +143,14 @@ export class AuthService {
    * @returns
    */
   async tokenValidateUser(payload: Payload | undefined): Promise<any> {
+    if (!payload?.email)
+      throw new UnauthorizedException("Can not found payload email");
+
     const jwt = await this.dataSource
       .createQueryBuilder()
       .select(["id", "userUuid", "name", "email"])
       .from(UserEntity, "")
-      .where(`email = '${payload.email}'`)
+      .where("email = :email", { email: payload.email })
       .getRawOne();
 
     if (!jwt) {
@@ -205,7 +212,7 @@ export class AuthService {
     }
   }
 
-  verifyRefreshToken(refreshToken: string) {
+  private verifyRefreshToken(refreshToken: string): Payload {
     return this.jwtService.verify(refreshToken);
   }
 }
