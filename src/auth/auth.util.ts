@@ -50,3 +50,4 @@ export class AuthUtil {
 export const REFRESH_TOKEN_REDIS_TTL = 1000 * 60 * 60 * 24 * 7;
 export const authRefreshTokenRedisKey = (userUuid: string): string =>
   `auth:refreshToken:${userUuid}`;
+export const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "jwtSecretKey";

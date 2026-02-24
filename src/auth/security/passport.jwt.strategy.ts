@@ -3,6 +3,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy, VerifiedCallback } from "passport-jwt";
 import { Payload } from "./user.payload.interface";
 import { AuthService } from "../auth.service";
+import { JWT_SECRET_KEY } from "../auth.util";
 
 const fromAuthCookie = function () {
   return function (request) {
@@ -10,9 +11,9 @@ const fromAuthCookie = function () {
     if (request && request.cookies) {
       token = request.cookies["accessToken"];
       if (!token) {
-        const { authorizaion } = request.headers;
-        if (!authorizaion) return token;
-        token = authorizaion.replace("Bearer ", "");
+        const { authorization } = request.headers;
+        if (!authorization) return token;
+        token = authorization.replace("Bearer ", "");
       }
     }
     return token;
@@ -39,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       algorithms: ["HS256"], //옵션에 명시하지 않아도 기본값으로 사용됨.
       type: "jwt", //타입을 명시적으로 작성(이외의 타입 : 'local', 'jwt', 'bearer', 'basic' 등)
-      secretOrKey: `${process.env.JWT_SECRET_KEY}` || "jwtSecretKey", //, => auth.Module에서 register()에 secret의 value값과 일치해야함.
+      secretOrKey: JWT_SECRET_KEY, //, => auth.Module에서 register()에 secret의 value값과 일치해야함.
     });
   }
 
