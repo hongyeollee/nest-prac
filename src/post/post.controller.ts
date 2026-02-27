@@ -32,6 +32,7 @@ import { Payload } from "src/auth/security/user.payload.interface";
 import { instanceToPlain } from "class-transformer";
 import { PostEntity } from "entities/post.entity";
 import { UpdateResult } from "typeorm";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 @Controller("post")
 @ApiTags("게시판 post")
 export class PostController {
@@ -115,28 +116,6 @@ export class PostController {
     `,
   })
   @ApiQuery({
-    name: "page",
-    required: true,
-    description: "페이지 번호",
-    schema: {
-      type: "number",
-      nullable: false,
-      example: 1,
-      default: 1,
-    },
-  })
-  @ApiQuery({
-    name: "limit",
-    required: true,
-    description: "페이지에 불러올 데이터 개수",
-    schema: {
-      type: "number",
-      nullable: false,
-      example: 10,
-      default: 10,
-    },
-  })
-  @ApiQuery({
     name: "name",
     required: false,
     description: "작성자를 입력합니다.",
@@ -192,8 +171,7 @@ export class PostController {
     },
   })
   async selectPostList(
-    @Query("page") page: number = 1,
-    @Query("limit") limit: number = 10,
+    @Query() pagination: PaginationQueryDTO,
     @Query("name") name?: string,
   ): Promise<{
     message: string;
@@ -201,7 +179,7 @@ export class PostController {
     list: PostEntity[];
     totalCount: number;
   }> {
-    const list = await this.postService.selectPostList(page, limit, name);
+    const list = await this.postService.selectPostList(pagination, name);
 
     return {
       message: "success",
@@ -657,10 +635,7 @@ export class PostController {
     deprecated: true,
     description: "사용하지 않는 api 입니다.",
   })
-  async selectPostListByUsers(
-    @Query("offset") offset?: number,
-    @Query("limit") limit?: number,
-  ) {
-    return await this.postService.selectPostListByUsers(offset, limit);
+  async selectPostListByUsers(@Query() pagination: PaginationQueryDTO) {
+    return await this.postService.selectPostListByUsers(pagination);
   }
 }

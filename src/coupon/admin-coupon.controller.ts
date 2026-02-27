@@ -40,6 +40,7 @@ import { ResponseSuccessGetCouponListDTO } from "./_dto/response-success-get-cou
 import { ResponseSuccessGetCouponDTO } from "./_dto/response-success-get-coupon.dto";
 import { Roles } from "src/auth/decorator/roles.decorator";
 import { RolesGuard } from "src/auth/security/role.guard";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 
 @Controller("admin/coupon")
 @ApiTags("어드민 쿠폰 관리(admin/coupon)")
@@ -221,20 +222,6 @@ export class AdminCouponContorller {
     description: "쿠폰 목록을 페이지네이션 방식으로 조회합니다.",
   })
   @ApiQuery({
-    name: "page",
-    required: false,
-    type: Number,
-    example: 1,
-    description: "조회할 페이지 번호 (기본값: 1)",
-  })
-  @ApiQuery({
-    name: "limit",
-    required: false,
-    type: Number,
-    example: 10,
-    description: "페이지당 항목 수 (기본값: 10)",
-  })
-  @ApiQuery({
     name: "orderBy",
     required: false,
     enum: ["ASC", "DESC"],
@@ -246,10 +233,9 @@ export class AdminCouponContorller {
     type: ResponseSuccessGetCouponListDTO,
   })
   async getCouponList(
-    @Query("page") page: number = 1,
-    @Query("limit") limit: number = 10,
+    @Query() pagination: PaginationQueryDTO,
     @Query("orderBy") orderBy: "DESC" | "ASC" = "DESC",
   ): Promise<ResponseSuccessGetCouponListDTO> {
-    return await this.couponService.getCouponList(page, limit, orderBy);
+    return await this.couponService.getCouponList(pagination, orderBy);
   }
 }

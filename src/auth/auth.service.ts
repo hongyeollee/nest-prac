@@ -212,7 +212,7 @@ export class AuthService {
     }
   }
 
-  private verifyRefreshToken(refreshToken: string): Payload {
-    return this.jwtService.verify(refreshToken);
+  verifyRefreshToken(refreshToken: string): Payload {
+    return this.jwtService.verify<Payload>(refreshToken);
   }
 }

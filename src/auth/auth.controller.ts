@@ -224,7 +224,7 @@ export class AuthController {
     const refreshToken = req.cookies["refreshToken"];
     if (refreshToken) {
       const verifyRefreshToken =
-        await this.authService.verifyRefreshToken(refreshToken);
+        this.authService.verifyRefreshToken(refreshToken);
       await this.authUtil.delRefreshTokenByRedis(verifyRefreshToken.userUuid);
     }
 

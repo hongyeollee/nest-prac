@@ -14,7 +14,6 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -28,6 +27,7 @@ import { User } from "src/auth/decorator/user.decorator";
 import { CreateLimitCouponIssueByUserDTO } from "../_dto/create-limit-coupon-issue-by-user.dto";
 import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-response.dto";
 import { ResponseSuccessGetMyCouponListDTO } from "../_dto/reponse-success-get-my-coupon-list-dto";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 
 @Controller("coupon-issued")
 @ApiTags("coupon-issued")
@@ -270,18 +270,6 @@ export class CouponIssuedController {
     description:
       "로그인한 사용자의 발급 쿠폰(발급 이력 + 쿠폰 정보)을 최신순으로 반환합니다.",
   })
-  @ApiQuery({
-    name: "page",
-    required: false,
-    example: 1,
-    description: "페이지(기본 1)",
-  })
-  @ApiQuery({
-    name: "limit",
-    required: false,
-    example: 10,
-    description: "페이지 크기(기본 10)",
-  })
   @ApiUnauthorizedResponse({
     description: "로그인하지 않은 경우",
     example: { message: "Unauthorized", statusCode: HttpStatus.UNAUTHORIZED },
@@ -292,13 +280,8 @@ export class CouponIssuedController {
   })
   async getMyCoupons(
     @User() user: Payload,
-    @Query("page") page = 1,
-    @Query("limit") limit = 10,
+    @Query() pagination: PaginationQueryDTO,
   ): Promise<ResponseSuccessGetMyCouponListDTO> {
-    return this.couponIssuedService.getMyCoupons(
-      user,
-      Number(page),
-      Number(limit),
-    );
+    return this.couponIssuedService.getMyCoupons(user, pagination);
   }
 }

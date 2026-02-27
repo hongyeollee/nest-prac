@@ -14,6 +14,7 @@ import { ResponseCommonSuccessDTO } from "src/_common/_dto/common-success-respon
 import { UpdateCouponDTO } from "./_dto/update-coupon.dto";
 import { ResponseSuccessGetCouponListDTO } from "./_dto/response-success-get-coupon-list.dto";
 import { ResponseSuccessGetCouponDTO } from "./_dto/response-success-get-coupon.dto";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 
 @Injectable()
 export class CouponService {
@@ -111,10 +112,10 @@ export class CouponService {
   }
 
   async getCouponList(
-    page: number = 1,
-    limit: number = 10,
+    pagination: PaginationQueryDTO,
     orderBy: "DESC" | "ASC" = "DESC",
   ): Promise<ResponseSuccessGetCouponListDTO> {
+    const { page, limit } = pagination;
     const [coupons, totalCount] = await this.couponRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,

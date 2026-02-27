@@ -20,6 +20,7 @@ import { CouponIssuedEntity } from "entities/coupons/coupon-issued.entity";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from "cache-manager";
 import { ResponseSuccessGetMyCouponListDTO } from "../_dto/reponse-success-get-my-coupon-list-dto";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 
 @Injectable()
 export class CouponIssuedService {
@@ -249,7 +250,8 @@ export class CouponIssuedService {
     });
   }
 
-  async getMyCoupons(user: Payload, page: number = 1, limit: number = 10) {
+  async getMyCoupons(user: Payload, pagination: PaginationQueryDTO) {
+    const { page, limit } = pagination;
     const redisKey = `coupons:list:${user.id}:p${page}:l${limit}`;
     const cached =
       await this.cacheManager.get<ResponseSuccessGetMyCouponListDTO>(redisKey);

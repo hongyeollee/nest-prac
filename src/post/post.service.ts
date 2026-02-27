@@ -8,6 +8,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { PostLikeEntity } from "entities/post-like.entity";
 import { PostEntity } from "entities/post.entity";
 import { UserEntity } from "entities/user.entity";
+import { PaginationQueryDTO } from "src/_common/_dto/pagination-query.dto";
 import { Payload } from "src/auth/security/user.payload.interface";
 import { UserService } from "src/user/user.service";
 import { DataSource, IsNull, Repository, UpdateResult } from "typeorm";
@@ -51,13 +52,13 @@ export class PostService {
    * @returns
    */
   async selectPostList(
-    page: number,
-    limit: number,
+    pagination: PaginationQueryDTO,
     name?: string,
   ): Promise<{
     list: PostEntity[];
     totalCount: number;
   }> {
+    const { page, limit } = pagination;
     let userUuid: string | undefined;
     if (name) {
       const userInfo = await this.userService.getUser({ name });
@@ -290,15 +291,10 @@ export class PostService {
    * (현재 deprecate)
    * @returns
    */
-  async selectPostListByUsers(offset?: number, limit?: number): Promise<any> {
-    //페이지 네이션 사용시 필요
-    // if(!offset || !limit) {
-    //   throw new BadRequestException('invalid offset, limit parameters')
-    // }
-    // if(offset < 1) {
-    //   throw new BadRequestException('invalid page parameter')
-    // }
-
+  async selectPostListByUsers(pagination: PaginationQueryDTO): Promise<{
+    list: UserEntity[];
+    totalCount: number;
+  }> {
     //case1. leftJoinAndSelect 쿼리 사용
     const queryBuilder = this.dataSource
       .getRepository(UserEntity)
