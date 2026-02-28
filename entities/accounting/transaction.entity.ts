@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,6 +15,7 @@ import {
 import { AccountingJournalEntryEntity } from "./journal-entry.entity";
 
 @Entity("accounting_transaction")
+@Index("idx_accounting_transaction_notionPageId", ["notionPageId"])
 export class AccountingTransactionEntity {
   @PrimaryGeneratedColumn("increment", {
     name: "id",
@@ -25,11 +27,51 @@ export class AccountingTransactionEntity {
   @Column("varchar", {
     name: "notionPageId",
     length: 128,
-    unique: true,
     nullable: false,
     comment: "노션 페이지 아이디",
   })
   notionPageId: string;
+
+  @Column("int", {
+    name: "revision",
+    unsigned: true,
+    nullable: false,
+    default: 1,
+    comment: "정정 버전",
+  })
+  revision: number;
+
+  @Column("int", {
+    name: "correctedFromId",
+    unsigned: true,
+    nullable: true,
+    comment: "정정 원거래 아이디",
+  })
+  correctedFromId: number | null;
+
+  @Column("varchar", {
+    name: "correctionReason",
+    length: 500,
+    nullable: true,
+    comment: "정정 사유",
+  })
+  correctionReason: string | null;
+
+  @Column("varchar", {
+    name: "cancellationReason",
+    length: 500,
+    nullable: true,
+    comment: "취소 사유",
+  })
+  cancellationReason: string | null;
+
+  @Column("datetime", {
+    name: "notionLastEditedAt",
+    precision: 0,
+    nullable: true,
+    comment: "노션 최종 수정일",
+  })
+  notionLastEditedAt: Date | null;
 
   @Column("date", {
     name: "date",

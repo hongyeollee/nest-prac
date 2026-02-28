@@ -349,8 +349,13 @@ http://localhost/api/docs
 
 - `POST /account/sync/notion` - 노션 거래 동기화
 - `POST /account/journal/generate` - 분개 생성
+- `POST /account/journal/rebuild` - 규칙 기반 분개 재생성 (소급/비소급)
 - `GET /account/inbox` - 검토 필요 거래 조회
 - `GET /account/export/excel` - 분개장/시산표 엑셀 다운로드
+- `GET /account/rule` - 분개 규칙 조회
+- `POST /account/rule` - 분개 규칙 생성
+- `PATCH /account/rule/:id` - 분개 규칙 수정
+- `DELETE /account/rule/:id` - 분개 규칙 삭제
 
 ## WebSocket Testing / 웹소켓 테스트
 

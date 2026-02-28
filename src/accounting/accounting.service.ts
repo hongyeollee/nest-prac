@@ -1,6 +1,18 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
+import {
+  Between,
+  In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Not,
+  QueryFailedError,
+  Repository,
+} from "typeorm";
 import { Client } from "@notionhq/client";
 import * as ExcelJS from "exceljs";
 import {
@@ -18,6 +30,13 @@ import { NotionTransactionDto } from "./dto/notion-transaction.dto";
 import { GenerateJournalDto } from "./dto/generate-journal.dto";
 import { ExportExcelQueryDto } from "./dto/export-excel.query.dto";
 import { InboxQueryDto } from "./dto/inbox.query.dto";
+import { RuleQueryDto } from "./dto/rule-query.dto";
+import { CreateRuleDto } from "./dto/create-rule.dto";
+import { UpdateRuleDto } from "./dto/update-rule.dto";
+import {
+  JournalRebuildMode,
+  RebuildJournalDto,
+} from "./dto/rebuild-journal.dto";
 
 type TrialBalanceRow = {
   account: string;
@@ -47,20 +66,82 @@ export class AccountingService {
     category: "분류",
     counterparty: "거래처",
     memo: "메모",
+    correctionReason: "정정 사유",
+    cancellationReason: "취소 사유",
   };
 
   async syncNotion() {
-    const { transactions, skippedCount } = await this.fetchNotionTransactions();
+    const { transactions, skippedCount, notionPageIds } =
+      await this.fetchNotionTransactions();
     const synced = [] as AccountingTransactionEntity[];
+    let correctedCount = 0;
+    let cancelledCount = 0;
+    let unchangedCount = 0;
 
     for (const transaction of transactions) {
       const existing = await this.transactionRepository.findOne({
         where: { notionPageId: transaction.notionPageId },
+        order: { revision: "DESC" },
       });
+      const lastEditedAt = transaction.notionLastEditedAt
+        ? new Date(transaction.notionLastEditedAt)
+        : null;
+      const isArchived = Boolean(transaction.notionArchived);
+
+      if (existing?.notionLastEditedAt && lastEditedAt) {
+        if (existing.notionLastEditedAt.getTime() === lastEditedAt.getTime()) {
+          unchangedCount += 1;
+          continue;
+        }
+      }
+
+      if (isArchived) {
+        if (existing) {
+          existing.status = AccountingTransactionStatus.Cancelled;
+          existing.cancellationReason =
+            transaction.cancellationReason ?? "notion_archived";
+          existing.notionLastEditedAt = lastEditedAt;
+          await this.transactionRepository.save(existing);
+        } else {
+          const cancelledEntity = this.transactionRepository.create({
+            notionPageId: transaction.notionPageId,
+            revision: 1,
+            correctedFromId: null,
+            notionLastEditedAt: lastEditedAt,
+            date: new Date(transaction.date),
+            type: transaction.type,
+            amount: this.formatAmount(transaction.amount),
+            amountIncludesVat: transaction.amountIncludesVat,
+            vatType: transaction.vatType,
+            category: transaction.category,
+            counterparty: transaction.counterparty ?? null,
+            memo: transaction.memo ?? null,
+            status: AccountingTransactionStatus.Cancelled,
+            error: null,
+            correctionReason: null,
+            cancellationReason:
+              transaction.cancellationReason ?? "notion_archived",
+          });
+          await this.transactionRepository.save(cancelledEntity);
+        }
+        cancelledCount += 1;
+        continue;
+      }
+
+      if (existing) {
+        existing.status = AccountingTransactionStatus.Corrected;
+        existing.correctionReason =
+          transaction.correctionReason ?? "notion_updated";
+        existing.notionLastEditedAt = lastEditedAt;
+        await this.transactionRepository.save(existing);
+        correctedCount += 1;
+      }
 
       const entity = this.transactionRepository.create({
-        id: existing?.id,
         notionPageId: transaction.notionPageId,
+        revision: existing ? existing.revision + 1 : 1,
+        correctedFromId: existing?.id ?? null,
+        notionLastEditedAt: lastEditedAt,
         date: new Date(transaction.date),
         type: transaction.type,
         amount: this.formatAmount(transaction.amount),
@@ -71,14 +152,43 @@ export class AccountingService {
         memo: transaction.memo ?? null,
         status: AccountingTransactionStatus.Ready,
         error: null,
+        correctionReason: null,
+        cancellationReason: null,
       });
 
       synced.push(await this.transactionRepository.save(entity));
     }
 
+    if (notionPageIds.size > 0) {
+      const activeTransactions = await this.transactionRepository.find({
+        where: {
+          status: Not(
+            In([
+              AccountingTransactionStatus.Cancelled,
+              AccountingTransactionStatus.Corrected,
+            ]),
+          ),
+        },
+      });
+
+      for (const transaction of activeTransactions) {
+        if (notionPageIds.has(transaction.notionPageId)) {
+          continue;
+        }
+
+        transaction.status = AccountingTransactionStatus.Cancelled;
+        transaction.cancellationReason = "notion_deleted";
+        await this.transactionRepository.save(transaction);
+        cancelledCount += 1;
+      }
+    }
+
     return {
       syncedCount: synced.length,
       skippedCount,
+      correctedCount,
+      cancelledCount,
+      unchangedCount,
     };
   }
 
@@ -110,30 +220,10 @@ export class AccountingService {
         continue;
       }
 
-      const journalLines = this.buildJournalLines(transaction, rule);
-      const isBalanced = this.isBalanced(journalLines);
-
-      const entry = this.journalEntryRepository.create({
-        transactionId: transaction.id,
-        memo: transaction.memo ?? null,
-        isBalanced,
-        lines: journalLines,
-      });
-
-      await this.journalEntryRepository.save(entry);
-      createdCount += 1;
-
-      if (!isBalanced) {
-        transaction.status = AccountingTransactionStatus.Review;
-        transaction.error = "debit and credit mismatch";
-        reviewCount += 1;
-      } else {
-        transaction.status = AccountingTransactionStatus.Processed;
-        transaction.error = null;
-        processedCount += 1;
-      }
-
-      await this.transactionRepository.save(transaction);
+      const result = await this.processTransactionWithRule(transaction, rule);
+      createdCount += result.createdCount;
+      reviewCount += result.reviewCount;
+      processedCount += result.processedCount;
     }
 
     if (missingRuleCategories.size > 0) {
@@ -149,6 +239,73 @@ export class AccountingService {
     return {
       createdCount,
       processedCount,
+      reviewCount,
+    };
+  }
+
+  async rebuildJournalEntries(payload: RebuildJournalDto) {
+    const rule = await this.ruleRepository.findOne({
+      where: { id: payload.ruleId },
+    });
+
+    if (!rule) {
+      throw new NotFoundException("accounting rule not found");
+    }
+
+    const targetStatuses =
+      payload.mode === JournalRebuildMode.Retroactive
+        ? [
+            AccountingTransactionStatus.Ready,
+            AccountingTransactionStatus.Review,
+            AccountingTransactionStatus.Processed,
+          ]
+        : [
+            AccountingTransactionStatus.Ready,
+            AccountingTransactionStatus.Review,
+          ];
+
+    const transactions = await this.transactionRepository.find({
+      where: {
+        type: rule.type,
+        category: rule.category,
+        status: In(targetStatuses),
+        ...this.buildDateRangeFilter(payload),
+      },
+      order: { date: "ASC" },
+    });
+
+    let reversedCount = 0;
+    let rebuiltCount = 0;
+    let reviewCount = 0;
+
+    for (const transaction of transactions) {
+      if (
+        transaction.status === AccountingTransactionStatus.Cancelled ||
+        transaction.status === AccountingTransactionStatus.Corrected
+      ) {
+        continue;
+      }
+
+      if (payload.mode === JournalRebuildMode.Retroactive) {
+        reversedCount += await this.createReversalEntries(transaction, {
+          ruleId: rule.id,
+          mode: payload.mode,
+        });
+      }
+
+      const result = await this.processTransactionWithRule(transaction, rule, {
+        resetStatus:
+          payload.mode === JournalRebuildMode.Retroactive &&
+          transaction.status === AccountingTransactionStatus.Processed,
+        memoSuffix: `[REBUILD] ruleId=${rule.id} / mode=${payload.mode}`,
+      });
+      rebuiltCount += result.createdCount;
+      reviewCount += result.reviewCount;
+    }
+
+    return {
+      rebuiltCount,
+      reversedCount,
       reviewCount,
     };
   }
@@ -271,6 +428,66 @@ export class AccountingService {
     const buffer = await workbook.xlsx.writeBuffer();
 
     return Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+  }
+
+  async getRules(query: RuleQueryDto) {
+    const where = {
+      ...(query.type ? { type: query.type } : {}),
+      ...(query.category ? { category: query.category } : {}),
+    };
+
+    const rules = await this.ruleRepository.find({
+      where,
+      order: { type: "ASC", category: "ASC" },
+    });
+
+    return {
+      totalCount: rules.length,
+      rules,
+    };
+  }
+
+  async createRule(payload: CreateRuleDto) {
+    const entity = this.ruleRepository.create(payload);
+
+    try {
+      return await this.ruleRepository.save(entity);
+    } catch (error) {
+      this.handleRuleError(error);
+    }
+  }
+
+  async updateRule(id: number, payload: UpdateRuleDto) {
+    const existing = await this.ruleRepository.findOne({ where: { id } });
+
+    if (!existing) {
+      throw new NotFoundException("accounting rule not found");
+    }
+
+    const entity = this.ruleRepository.create({
+      ...existing,
+      ...payload,
+    });
+
+    try {
+      return await this.ruleRepository.save(entity);
+    } catch (error) {
+      this.handleRuleError(error);
+    }
+  }
+
+  async deleteRule(id: number) {
+    const existing = await this.ruleRepository.findOne({ where: { id } });
+
+    if (!existing) {
+      throw new NotFoundException("accounting rule not found");
+    }
+
+    await this.ruleRepository.remove(existing);
+
+    return {
+      deletedId: id,
+    };
   }
 
   private async exportExcelData(query: ExportExcelQueryDto) {
@@ -534,9 +751,13 @@ export class AccountingService {
     } while (cursor);
 
     const transactions: NotionTransactionDto[] = [];
+    const notionPageIds = new Set<string>();
     let skippedCount = 0;
 
     for (const page of results) {
+      if (page?.id) {
+        notionPageIds.add(page.id);
+      }
       const parsed = this.parseNotionPage(page);
 
       if (!parsed) {
@@ -547,7 +768,7 @@ export class AccountingService {
       transactions.push(parsed);
     }
 
-    return { transactions, skippedCount };
+    return { transactions, skippedCount, notionPageIds };
   }
 
   private parseNotionPage(page: any): NotionTransactionDto | null {
@@ -576,6 +797,14 @@ export class AccountingService {
     const categoryValue =
       this.getTextProperty(properties, this.notionPropertyMap.category) ??
       typeValue;
+    const correctionReason = this.getTextProperty(
+      properties,
+      this.notionPropertyMap.correctionReason,
+    );
+    const cancellationReason = this.getTextProperty(
+      properties,
+      this.notionPropertyMap.cancellationReason,
+    );
 
     if (
       !notionPageId ||
@@ -604,6 +833,10 @@ export class AccountingService {
       amountIncludesVat: vatIncluded,
       vatType: normalizedVatType,
       category: categoryValue,
+      notionLastEditedAt: page.last_edited_time ?? undefined,
+      notionArchived: Boolean(page.archived || page.in_trash),
+      correctionReason: correctionReason ?? undefined,
+      cancellationReason: cancellationReason ?? undefined,
       counterparty:
         this.getTextProperty(properties, this.notionPropertyMap.counterparty) ??
         undefined,
@@ -716,5 +949,116 @@ export class AccountingService {
     }
 
     return null;
+  }
+
+  private async processTransactionWithRule(
+    transaction: AccountingTransactionEntity,
+    rule: AccountingRuleEntity,
+    options: {
+      resetStatus?: boolean;
+      memoSuffix?: string;
+    } = {},
+  ) {
+    const journalLines = this.buildJournalLines(transaction, rule);
+    const isBalanced = this.isBalanced(journalLines);
+    const memo = this.buildEntryMemo(transaction.memo, options.memoSuffix);
+
+    const entry = this.journalEntryRepository.create({
+      transactionId: transaction.id,
+      memo,
+      isBalanced,
+      lines: journalLines,
+    });
+
+    await this.journalEntryRepository.save(entry);
+
+    if (options.resetStatus) {
+      transaction.status = AccountingTransactionStatus.Ready;
+    }
+
+    if (!isBalanced) {
+      transaction.status = AccountingTransactionStatus.Review;
+      transaction.error = "debit and credit mismatch";
+      await this.transactionRepository.save(transaction);
+      return { createdCount: 1, reviewCount: 1, processedCount: 0 };
+    }
+
+    transaction.status = AccountingTransactionStatus.Processed;
+    transaction.error = null;
+    await this.transactionRepository.save(transaction);
+    return { createdCount: 1, reviewCount: 0, processedCount: 1 };
+  }
+
+  private async createReversalEntries(
+    transaction: AccountingTransactionEntity,
+    context: { ruleId: number; mode: JournalRebuildMode },
+  ) {
+    const entries = await this.journalEntryRepository.find({
+      where: { transactionId: transaction.id },
+      relations: { lines: true },
+      order: { createdDt: "DESC" },
+    });
+
+    if (entries.length === 0) {
+      return 0;
+    }
+
+    for (const entry of entries) {
+      const memoSuffix = this.buildReversalMemo(context, entry.id);
+      const reversalLines = entry.lines.map((line) =>
+        this.journalLineRepository.create({
+          account: line.account,
+          side:
+            line.side === AccountingLineSide.Debit
+              ? AccountingLineSide.Credit
+              : AccountingLineSide.Debit,
+          amount: line.amount,
+        }),
+      );
+
+      const reversalEntry = this.journalEntryRepository.create({
+        transactionId: transaction.id,
+        memo: memoSuffix,
+        isBalanced: true,
+        lines: reversalLines,
+      });
+
+      await this.journalEntryRepository.save(reversalEntry);
+    }
+
+    return entries.length;
+  }
+
+  private buildEntryMemo(original: string | null, suffix?: string) {
+    if (!suffix) {
+      return original ?? null;
+    }
+
+    if (!original) {
+      return suffix;
+    }
+
+    return `${original} | ${suffix}`;
+  }
+
+  private buildReversalMemo(
+    context: { ruleId: number; mode: JournalRebuildMode },
+    entryId: number,
+  ) {
+    return `[REVERSAL] ruleId=${context.ruleId} / sourceEntry=${entryId} / mode=${context.mode}`;
+  }
+
+  private handleRuleError(error: unknown): never {
+    if (error instanceof QueryFailedError) {
+      const driverError = error.driverError as {
+        code?: string;
+        message?: string;
+      };
+      if (driverError?.code === "ER_DUP_ENTRY") {
+        throw new BadRequestException("rule already exists for type/category");
+      }
+    }
+
+    throw error;
   }
 }
